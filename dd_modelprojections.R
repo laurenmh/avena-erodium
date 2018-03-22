@@ -5,7 +5,8 @@ library(grid)
 library(gridExtra)
 
 
-## FORMAT DATA FOR POPULATION MODELS
+## FORMAT DATA FOR POPULATION MODELS ##
+
 av1 <- togdat %>%
   filter(species == "Avena") %>%
   mutate(AVseedin = seed,
@@ -29,9 +30,9 @@ ag <- .9
 es <- .82
 eg <- .6
 
-##### ERODIUM MODELS ####
+##### ERODIUM MODEL ####
+## With seed bank 
 
-## With seed bank ##
 m1 <- as.formula(log(ERseedout +1) ~  log((ERseedin*eg +1))*((lambda)/(1+aiE*.5*log((ERseedin*eg + 1)) + aiA*log(AVseedin*ag + 1))))
 
 treatments <- unique(togdat$treatment)
@@ -52,9 +53,8 @@ for (i in 1:length(treatments)){
 }
 
 
-#### AVENA MODELS ###
-
-#### AVENA MODELS with seed bank ###
+#### AVENA MODEL ###
+## With seed bank 
 
 m1 <- as.formula(log(AVseedout +1) ~  log(AVseedin*ag +1)*((lambda)/(1+aiE*log(ERseedin*eg + 1) + aiA*log(AVseedin*ag + 1))))
 
@@ -87,10 +87,6 @@ model.dat <- rbind(ERoutput, AVoutput) %>%
 
 
 
-
-
-
-
 ### RUN THE MODELS FOR EACH SPECIES AT EQUILIBRIUM OR INVADING FOR A CONSISTENT CLIMATE CONDITION ###
 
 ### CREATE A FUNCTION THAT RUNS THE MODEL
@@ -104,8 +100,6 @@ growth = function(N, par.dat, t.num){
   return(N)
 }
 
-
-  
 
 ### CREATE A FUNCTION THAT CALCULATES POPULATION CHANGE OVER TIME AND GRWR ####
 
@@ -187,7 +181,7 @@ conRain <- grwr(conRainPar, t) %>%
 consistent.out <- rbind(conDry, fallDry, springDry, conRain) %>%
   mutate(treatment = as.factor(treatment)) %>%
   mutate(treatment=ordered(treatment, levels = c( consistentDry="consistentDry", fallDry="fallDry",springDry="springDry", controlRain="controlRain"))) %>%
-  mutate(treatment = revalue(treatment, c( consistentDry = "Consistent dry", fallDry = "Fall dry",springDry = "Spring dry", controlRain = "Consistent wet")))
+  mutate(treatment = recode(treatment, consistentDry = "Consistent dry", fallDry = "Fall dry",springDry = "Spring dry", controlRain = "Consistent wet"))
 
 consistent.grwr.out <- consistent.out %>%
   dplyr::select(invader, grwr, treatment) %>%
@@ -200,25 +194,24 @@ consistent.out2 <- consistent.out %>%
   mutate(count = ifelse(count <= 0.1, 0.1, count))
 
 ## Simulation graph ##
-pdf("Consistentsimulation.pdf", width = 12, height = 6)
+#pdf("Consistentsimulation.pdf", width = 12, height = 6)
 ggplot(consistent.out2, aes(x=time, y=(count), color = species)) + geom_line(size = 4) + facet_grid(invader ~ treatment) + 
   theme_bw() +  theme(text = element_text(size = 24), legend.position = "none", strip.background = element_blank(),
                       #strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + scale_y_log10(limits=c(.1, 1200), breaks = c( 1, 10, 100, 1000)) +
   labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Time step") + scale_color_manual(values = c("tan3", "darkgreen"))
-dev.off()
+#dev.off()
 
 
-pdf("ddGRWRfromModel.pdf", width = 8, height = 6)
+#pdf("ddGRWRfromModel.pdf", width = 8, height = 6)
 ggplot(consistent.grwr.out, aes(x=treatment, y=log(grwr), fill=invader)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
   labs(x = "Rainfall treatment", y = "Growth rate when rare (logged)", fill = "Species") + theme(text = element_text(size = 24)) +
   geom_hline(yintercept  =0) + scale_fill_manual(values = c("tan3", "darkgreen")) + theme(legend.position = "none")
-dev.off()
+#dev.off()
 
 
-# 
-# 
-# ## Check model fit
+
+# ## CHECK MODEL FITS
 # model.resid <- nlsResiduals(m1out)
 # plot(model.resid)
 # plot(model.resid, which=5)
@@ -226,13 +219,11 @@ dev.off()
 # predicted <- m1out$m$predict()
 # actual <- log(subset(dat, !is.na(ERseedout) & treatment == treatments[i])$ERseedout)
 # 
-# 
 # pa <- cbind(predicted, actual) %>%
 #   data.frame() %>%
 #   tbl_df() 
 # 
 # plot(log(pa$actual), (pa$predicted))
-# 
 # 
 # l <- lm( pa$predicted ~ log(pa$actual +1))
 # abline(l)
@@ -245,14 +236,9 @@ dev.off()
 # preview(m1, dat, start=list(lambda=1, aii=.01, p1=.1))
 # preview(m1, dat, start=list(lambda=1, aii=.01, p1=.1), variable = 13)
 # preview(m1, dat, start=list(lambda=1, aii=.01, p1=.1), variable = 8)
-# 
-# 
-# 
-# 
 
-## 
 
-### CREATE A FUNCTION THAT CALCULATES POPULATION CHANGE OVER TIME WHEN ALONE! ####
+### CREATE A FUNCTION THAT CALCULATES POPULATION CHANGE OVER TIME WHEN A SPECIES IS ALONE ####
 
 grwr_nocomp = function(par.dat, t.num) {
   N1 = as.data.frame(matrix(NA, nrow=t.num, ncol=2))
@@ -280,14 +266,16 @@ grwr_nocomp = function(par.dat, t.num) {
   return(out)
 }  
 
-### Run the model for the consistent environment ###
+### Run the model for each species grown alone in the consistent environment ###
 t = 100
  
+# Set parameters
 conDryPar <- consistent.par(model.dat, 1, t)
 fallDryPar <- consistent.par(model.dat, 2, t)
 springDryPar <- consistent.par(model.dat, 4, t)
 conRainPar <- consistent.par(model.dat, 3, t)
 
+# Run for each scenario
 conDry_GRWR_nocomp <- grwr_nocomp(conDryPar, t) %>%
   mutate(treatment = "consistentDry")
 fallDry_GRWR_nocomp <- grwr_nocomp(fallDryPar, t)  %>%
@@ -302,33 +290,36 @@ GRWR_nocomp <- rbind(conDry_GRWR_nocomp, fallDry_GRWR_nocomp, springDry_GRWR_noc
   dplyr::select(invader, grwalone, treatment) %>%
   unique()
 
-ggplot(GRWR_nocomp, aes(x=treatment, y=grwalone, color = invader)) + geom_point()
+# ggplot(GRWR_nocomp, aes(x=treatment, y=grwalone, color = invader)) + geom_point()
 
 GRWR_withcomp <- rbind(conDry, fallDry, springDry, conRain) %>%
   dplyr::select(invader, grwr, treatment) %>%
   unique() 
 
+# Combine with GRWR with a competitor; compare growth rates
 GRWRtog <- left_join(GRWR_nocomp, GRWR_withcomp) %>%
   mutate(species = invader) %>%
   mutate(compeffect = log(grwalone/grwr))
 
+# Visualize simulated lambda (ie, growth rate when alone and rare) with competitive effect
 ggplot(GRWRtog, aes(y=log(grwalone), x=compeffect, color = invader)) + geom_point(size = 4) + geom_smooth(method = "lm", se =F) + 
   labs(y= "Environment", x = "Competition", color = "Species") +
   theme_classic() + theme(text = element_text(size = 20))
 
 
-pdf("EnvironmentCompetitionCovariance.pdf", width = 10, height = 8)
-ggplot(GRWRtog, aes(x=grwalone, y=grwr, color = invader)) + geom_point(size = 4) + geom_smooth(method = "lm", se =F) + 
-  labs(x= "Growth rate when rare and alone", y = "Growth rate when rare in competition", color = "Species") +
-  theme_classic() + theme(text = element_text(size = 20)) + geom_abline(slope = 1)
-dev.off()
+# Put it together with fited lambda for covariances
+outdat <- left_join(GRWRtog, model.dat) %>%
+  group_by(species) %>%
+  mutate(Ravg = mean(grwalone),
+         Ejx = grwalone/Ravg,
+         Cjx = compeffect/Ravg,
+         Ejx2 = log(grwalone))
 
 GRWRav <- outdat %>%
   filter(invader == "Avena")
 
 cov(GRWRav$grwalone, GRWRav$grwr)
 cov(GRWRav$Ejx2, GRWRav$compeffect)
-
 
 
 GRWRero <- outdat %>%
@@ -339,18 +330,11 @@ cov(GRWRero$grwalone, GRWRero$compeffect)
 cov(GRWRero$Ejx2, GRWRero$compeffect)
 cov(GRWRero$Ejx, GRWRero$compeffect)
 
-outdat <- left_join(GRWRtog, model.dat) %>%
-  group_by(species) %>%
-  mutate(Ravg = mean(grwalone),
-         Ejx = grwalone/Ravg,
-         Cjx = compeffect/Ravg,
-         Ejx2 = log(grwalone))
 
-resinvader 
 
 ggplot(outdat, aes(y=Ejx, x=compeffect, color = species)) + geom_point(pch =0, size = 4 ) + geom_smooth(method = "lm", se = F) + theme_classic()
 
 ggplot(outdat, aes(y=Ejx, x=compeffect, color = species)) + geom_point() 
 
 
-ggplot(outdat, aes(x=lambda, y=grwalone)) + geom_point() + xlim(0,10)
+#ggplot(outdat, aes(x=lambda, y=grwalone)) + geom_point() + xlim(0,10)

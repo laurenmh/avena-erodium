@@ -2,7 +2,7 @@ library(tidyverse)
 
 
 ## DECEMBER DATA
-mydat <- read.csv("dd_stem_count_20141216.csv")
+mydat <- read_csv("dd_stem_count_20141216.csv")
 
 
 ## CREATE A KEY TO ADD TREATMENT INFO TO SUBSEQUENT DATA
@@ -33,8 +33,7 @@ trtconvert <- mydat %>%
 
 
 ## APRIL DATA
-mydat_apr <- read.csv("dd_stem_count_20150423.csv") %>%
-  tbl_df() %>%
+mydat_apr <- read_csv("dd_stem_count_20150423.csv") %>%
 mutate(AVcor=1, AVcor=ifelse(AVquadrat2 == "10x25cm", 2.5, AVcor),
        AVcor=ifelse(AVquadrat2 == "5x5cm", 25, AVcor)) %>%
 mutate(EROcor=1, EROcor=ifelse(EROquadrat2 == "10x25cm", 2.5, EROcor),
@@ -59,7 +58,7 @@ mydat_apr2 <- tbl_df(merge(mydat_apr, trtconvert2))
 
 
 # ADD SHELTER CONVERSION KEY
-shelterkey <- read.csv("Shelter_key.csv")
+shelterkey <- read_csv("Shelter_key.csv")
 mydat2 <- merge(mydat_apr2, shelterkey) %>%
   tbl_df() %>%
 gather(spptrt, prop, AVtrt:EROtrt)%>%
