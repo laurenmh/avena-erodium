@@ -1,10 +1,9 @@
 ### Historical projects for Browns Valley ###
-
+library(tidyverse)
 library(lubridate)
 
 ## Pull in the prism data and clean
-rain <- read.csv("PRISM_brownsvalley_long.csv", skip = 10) %>%
-  tbl_df() %>%
+rain <- read_csv("PRISM_brownsvalley_long.csv", skip = 10) %>%
   mutate(ppt = `ppt..inches.`*2.54*10) %>%
   separate(Date, c("year", "month")) %>%
   mutate(year = as.numeric(year),
