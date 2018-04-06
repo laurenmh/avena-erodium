@@ -2,7 +2,7 @@ library(tidyverse)
 
 
 ## DECEMBER DATA
-mydat <- read_csv("dd_stem_count_20141216.csv")
+mydat <- read_csv("Data/dd_stem_count_20141216.csv")
 
 
 ## CREATE A KEY TO ADD TREATMENT INFO TO SUBSEQUENT DATA
@@ -33,7 +33,7 @@ trtconvert <- mydat %>%
 
 
 ## APRIL DATA
-mydat_apr <- read_csv("dd_stem_count_20150423.csv") %>%
+mydat_apr <- read_csv("Data/dd_stem_count_20150423.csv") %>%
 mutate(AVcor=1, AVcor=ifelse(AVquadrat2 == "10x25cm", 2.5, AVcor),
        AVcor=ifelse(AVquadrat2 == "5x5cm", 25, AVcor)) %>%
 mutate(EROcor=1, EROcor=ifelse(EROquadrat2 == "10x25cm", 2.5, EROcor),
