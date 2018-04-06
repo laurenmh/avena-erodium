@@ -58,7 +58,7 @@ mydat_apr2 <- tbl_df(merge(mydat_apr, trtconvert2))
 
 
 # ADD SHELTER CONVERSION KEY
-shelterkey <- read_csv("Shelter_key.csv")
+shelterkey <- read_csv("Data/Shelter_key.csv")
 mydat2 <- merge(mydat_apr2, shelterkey) %>%
   tbl_df() %>%
 gather(spptrt, prop, AVtrt:EROtrt)%>%
