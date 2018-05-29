@@ -9,7 +9,10 @@ library(multcomp)
 alltog <- left_join(recruittog[c("plot", "subplot", "propgerm", "species")], togdat) %>%
   mutate(growth = seedsout/seed) %>%
   mutate(treatment1 = as.character(treatment))  %>%
-  mutate(fallrain = ifelse(treatment1 == "controlRain" | treatment1 == "springDry", "yes", "no"))
+  mutate(fallrain = ifelse(treatment1 == "controlRain" | treatment1 == "springDry", "yes", "no")) %>%
+  mutate(denstrt = as.factor(paste(density, treatment1, sep="_")),
+         densprop = as.factor(paste(density, prop, sep = "_")),
+         denstrtprop = as.factor(paste(density, prop, treatment1, sep ="_")))
 
 ### ERODIUM propgerm as a function of density, prop and treatment ###
 ggplot(subset(alltog, species == "Erodium"), aes(x=prop, y=propgerm)) + geom_point() + 
@@ -68,12 +71,22 @@ ggplot(subset(alltog, species == "Erodium"), aes(x=prop, y=R)) + geom_point() +
 ggplot(subset(alltog, species == "Erodium"), aes(x=prop, y=R)) + geom_point() + 
   facet_grid(density ~ fallrain, scales = "free") + geom_smooth(method = "lm", se = F)
 
+
 ## Effect of fall rain on germination rates 
 l <- lm(R~prop*density + prop*treatment1, data = subset(alltog, species == "Erodium", !is.na(propgerm)))
 summary(l)    
 
-l <- lme(R ~ prop*treatment1*density, random = ~1|shelterBlock, data = subset(alltog, species == "Erodium" & !is.na(propgerm)))
+
+l <- lme(R ~ denstrtprop, random = ~1|shelterBlock, data = subset(alltog, species == "Erodium" & !is.na(propgerm)))
+summary(l)   
+
+summary(glht(l, linfct=mcp(denstrtprop="Tukey")))
+
+
+
+l <- lme(R ~ prop*density*treatment1, random = ~1|shelterBlock, data = subset(alltog, species == "Erodium" & !is.na(propgerm)))
 summary(l)
+
 
 ## Now just do yes versus no for fall rain
 l <- lm(R~prop*density + prop*fallrain, data = subset(alltog, species == "Erodium", !is.na(propgerm)))
