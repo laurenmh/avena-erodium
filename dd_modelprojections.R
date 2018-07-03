@@ -119,9 +119,11 @@ grwr = function(par.dat, t.num) {
   N3[1,] = c(Aequil[t.num, 1],1)
   Einvade <- growth(N3, par.dat, t.num)
   Egrwr <- Einvade[2,2]/Einvade[1,2]
+  Agrwc <- Einvade[2,1]/Einvade[1,1]
   Einvade$invader <- "Erodium"
   Einvade$grwr <- Egrwr
   Einvade$time <- as.numeric(row.names(Einvade))
+  Einvade$Cgrwc <- Agrwc
   
   N4 = as.data.frame(matrix(NA, nrow=t.num, ncol=2))
   colnames(N4) = c("Na", "Ne")
@@ -129,10 +131,12 @@ grwr = function(par.dat, t.num) {
   Ainvade <- growth(N4, par.dat, t.num)
   
   Agrwr <- Ainvade[2,1]/Ainvade[1,1]
+  Egrwc <- Ainvade[2,2]/Ainvade[1,2]
   
   Ainvade$invader <- "Avena"
   Ainvade$grwr <- Agrwr
   Ainvade$time <- as.numeric(row.names(Ainvade))
+  Ainvade$Cgrwc <- Egrwc
   
   
   out <- rbind(Ainvade, Einvade) 
@@ -184,8 +188,9 @@ consistent.out <- rbind(conDry, fallDry, springDry, conRain) %>%
   mutate(treatment = recode(treatment, consistentDry = "Consistent dry", fallDry = "Fall dry",springDry = "Spring dry", controlRain = "Consistent wet"))
 
 consistent.grwr.out <- consistent.out %>%
-  dplyr::select(invader, grwr, treatment) %>%
-  unique() 
+  dplyr::select(invader, grwr, treatment, Cgrwc) %>%
+  unique()  %>%
+  mutate(grwrChesson = grwr-Cgrwc)
 
 
 consistent.out2 <- consistent.out %>%
