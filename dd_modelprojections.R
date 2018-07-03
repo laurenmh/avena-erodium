@@ -190,7 +190,7 @@ consistent.out <- rbind(conDry, fallDry, springDry, conRain) %>%
 consistent.grwr.out <- consistent.out %>%
   dplyr::select(invader, grwr, treatment, Cgrwc) %>%
   unique()  %>%
-  mutate(grwrChesson = grwr-Cgrwc)
+  mutate(grwrChesson = log(grwr)-log(Cgrwc))
 
 
 consistent.out2 <- consistent.out %>%
@@ -209,8 +209,8 @@ ggplot(consistent.out2, aes(x=time, y=(count), color = species)) + geom_line(siz
 
 
 #pdf("ddGRWRfromModel.pdf", width = 8, height = 6)
-ggplot(consistent.grwr.out, aes(x=treatment, y=log(grwr), fill=invader)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
-  labs(x = "Rainfall treatment", y = "Growth rate when rare (logged)", fill = "Species") + theme(text = element_text(size = 24)) +
+ggplot(consistent.grwr.out, aes(x=treatment, y=grwrChesson, fill=invader)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
+  labs(x = "Rainfall treatment", y = expression("Growth rate when rare (r"[i] "-r"[r]), fill = "Species") + theme(text = element_text(size = 24)) +
   geom_hline(yintercept  =0) + scale_fill_manual(values = c("tan3", "darkgreen")) + theme(legend.position = "none")
 #dev.off()
 
