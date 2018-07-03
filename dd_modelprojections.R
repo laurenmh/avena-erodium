@@ -234,17 +234,20 @@ obs.erodium <- subset(consistent.grwr.out$grwrChesson, consistent.grwr.out$invad
 GRWR.obs.erodium  <- consistent.dry*obs.erodium [1] + fall.dry*obs.erodium [2] + spring.dry*obs.erodium [3] + control.rain*obs.erodium [4]
 
 overall.grwr <- c(GRWR.avg.avena, GRWR.avg.erodium, GRWR.obs.avena, GRWR.obs.erodium)
-treatments <- c("Consistant", "Consistant", "Observed", "Observed")
+treatments <- c("Consistent", "Consistent", "Observed", "Observed")
 species <- c("Avena", "Erodium", "Avena", "Erodium")
-time.avg <- data.frame(cbind(species, treatments, overall.grwr))
+time.avg <- data.frame(cbind(species, treatments, overall.grwr)) %>%
+  mutate(overall.grwr = as.numeric(as.character(overall.grwr)))
 
 # ------------------------------------------------------------------------------------------------
 # Lauren H, can we make this graph pretty?
-#pdf("GRWRAcrossConditions.pdf", width = 8, height = 6)
+# Absolutely! Although the Avena values so dwarf the Erodium ones, we might want to put it in the sup? Can't log because Erodium is less than 1 in consistent 
 ggplot(time.avg, aes(x=treatments, y=overall.grwr, fill=species)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
   labs(x = "Long-Term Conditions", y = "Average growth rate when rare", fill = "Species") + theme(text = element_text(size = 24)) +
-  geom_hline(yintercept  =0) + scale_fill_manual(values = c("tan3", "darkgreen")) + theme(legend.position = "none")
-#dev.off()
+  geom_hline(yintercept  =0) + scale_fill_manual(values = c("grey80", "grey30")) + theme(legend.position = "none")  #+ scale_y_log10()
+ggsave(here("Figs", "figsup_avg-grwr-consistent-observed.pdf"), width = 8, height = 6)
+ggsave(here("Figs", "figsup_avg-grwr-consistent-observed.jpg"), width = 8, height = 6)
+
 
 # ------------------------------------------------------------------------------------------------
 
@@ -259,16 +262,17 @@ ggplot(consistent.out2, aes(x=time, y=(count), color = species)) + geom_line(siz
   theme_bw() +  theme(text = element_text(size = 24), legend.position = "none", strip.background = element_blank(),
                       #strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + scale_y_log10(limits=c(.1, 1200), breaks = c( 1, 10, 100, 1000)) +
-  labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Time step") + scale_color_manual(values = c("tan3", "darkgreen"))
-#dev.off()
+  labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Time step") + scale_color_manual(values = c("grey80", "grey30"))
+ggsave(here("Figs", "fig3_consistent-simulation.pdf"), width = 12, height = 8)
+ggsave(here("Figs", "fig3_consistent-simulation.jpg"), width = 12, height = 8)
 
 
 #pdf("ddGRWRfromModel.pdf", width = 8, height = 6)
 ggplot(consistent.grwr.out, aes(x=treatment, y=grwrChesson, fill=invader)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
   labs(x = "Rainfall treatment", y = expression("Growth rate when rare (r"[i]* "-r"[r]*")"), fill = "Species") + theme(text = element_text(size = 24)) +
-  geom_hline(yintercept  =0) + scale_fill_manual(values = c("tan3", "darkgreen")) + theme(legend.position = "none")
-#dev.off()
-
+  geom_hline(yintercept  =0) + scale_fill_manual(values = c("grey80", "grey30")) + theme(legend.position = "none")
+ggsave(here("Figs", "fig2_GRWR-from-model.pdf"), width = 8, height = 6)
+ggsave(here("Figs", "fig2_GRWR-from-model.jpg"), width = 8, height = 6)
 
 
 # ## CHECK MODEL FITS
