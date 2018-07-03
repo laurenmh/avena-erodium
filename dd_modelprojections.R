@@ -256,8 +256,8 @@ ggplot(time.avg, aes(x=treatments, y=overall.grwr, fill=species)) + geom_bar(sta
         strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed-faceted.pdf"), width = 8, height = 6)
-ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed-faceted.jpg"), width = 8, height = 6)
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed-faceted.pdf"), width = 8, height = 4)
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed-faceted.jpg"), width = 8, height = 4)
 
 
 # ------------------------------------------------------------------------------------------------
