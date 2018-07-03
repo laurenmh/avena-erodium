@@ -248,6 +248,17 @@ ggplot(time.avg, aes(x=treatments, y=overall.grwr, fill=species)) + geom_bar(sta
 ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed.pdf"), width = 8, height = 6)
 ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed.jpg"), width = 8, height = 6)
 
+# Break it up by panels to avoid this issue
+ggplot(time.avg, aes(x=treatments, y=overall.grwr, fill=species)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
+  labs(x = "Long-term conditions", y = "Average growth rate when rare") + theme(text = element_text(size = 24)) +
+  geom_hline(yintercept  =0) + scale_fill_manual(values = c("grey80", "grey30")) + theme(legend.position = "none")  + facet_wrap(~species ,scales = "free") +
+  theme(strip.background = element_blank(), text = element_text(size = 16), 
+        strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed-faceted.pdf"), width = 8, height = 6)
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed-faceted.jpg"), width = 8, height = 6)
+
 
 # ------------------------------------------------------------------------------------------------
 
