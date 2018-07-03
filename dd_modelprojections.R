@@ -245,8 +245,8 @@ time.avg <- data.frame(cbind(species, treatments, overall.grwr)) %>%
 ggplot(time.avg, aes(x=treatments, y=overall.grwr, fill=species)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
   labs(x = "Long-Term Conditions", y = "Average growth rate when rare", fill = "Species") + theme(text = element_text(size = 24)) +
   geom_hline(yintercept  =0) + scale_fill_manual(values = c("grey80", "grey30")) + theme(legend.position = "none")  #+ scale_y_log10()
-ggsave(here("Figs", "figsup_avg-grwr-consistent-observed.pdf"), width = 8, height = 6)
-ggsave(here("Figs", "figsup_avg-grwr-consistent-observed.jpg"), width = 8, height = 6)
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed.pdf"), width = 8, height = 6)
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed.jpg"), width = 8, height = 6)
 
 
 # ------------------------------------------------------------------------------------------------
