@@ -19,7 +19,9 @@ rainsummary <-  rain %>%
   group_by(year, season) %>%
   summarize(ppt = sum(ppt)) %>%
   spread(season, ppt) %>%
-  mutate(Total = Early + Late) %>%
+  mutate(Total = Early + Late) 
+
+rainsummary <- rainsummary %>%
   mutate(raintype = "controlRain",
          raintype = ifelse(Early < quantile(rainsummary$Early, .5), "fallDry", raintype),
          raintype = ifelse(Late < quantile(rainsummary$Late, .5), "springDry", raintype),
