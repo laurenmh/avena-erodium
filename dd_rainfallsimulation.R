@@ -4,7 +4,7 @@ library(lubridate)
 
 ## Pull in the prism data and clean
 rain <- read_csv("Data/PRISM_brownsvalley_long.csv", skip = 10) %>%
-  mutate(ppt = `ppt..inches.`*2.54*10) %>%
+  mutate(ppt = `ppt (inches)`*2.54*10) %>%
   separate(Date, c("year", "month")) %>%
   mutate(year = as.numeric(year),
          month = as.numeric(month)) %>%
