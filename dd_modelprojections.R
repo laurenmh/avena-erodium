@@ -193,8 +193,77 @@ consistent.out <- rbind(conDry, fallDry, springDry, conRain) %>%
 consistent.grwr.out <- consistent.out %>%
   dplyr::select(invader, grwr, treatment, Cgrwc) %>%
   unique()  %>%
-  mutate(grwrChesson = grwr-Cgrwc)
+  mutate(grwrChesson = log(grwr)-log(Cgrwc))
 
+# calculate average GRWR for consistant conditions (e.g. 25% each)
+GRWR.avg.avena <- mean(subset(consistent.grwr.out$grwrChesson, consistent.grwr.out$invader =="Avena"))
+GRWR.avg.erodium <- mean(subset(consistent.grwr.out$grwrChesson, consistent.grwr.out$invader =="Erodium"))
+# shoot, erodium doesn't coexist
+
+# what about for what we actually see in terms of the number of years in each env. condition
+# first read in the data
+rain <- read_csv("Data/PRISM_brownsvalley_long.csv", skip = 10) %>%
+  mutate(ppt = `ppt (inches)`*2.54*10) %>%
+  separate(Date, c("year", "month")) %>%
+  mutate(year = as.numeric(year),
+         month = as.numeric(month)) %>%
+  mutate(year = ifelse(month == 12 | month == 11 | month == 10 | month == 9, year + 1, year)) %>%
+  mutate(season = "Early",
+         season = ifelse(month == 2 | month == 3 | month == 4, "Late", season)) %>%
+  filter(month != 5, month != 6, month!= 7, month != 8)
+
+## Summarize by year 
+## Using 50% as the cutoff 
+rainsummary <-  rain %>%
+  group_by(year, season) %>%
+  summarize(ppt = sum(ppt)) %>%
+  spread(season, ppt) %>%
+  mutate(Total = Early + Late) 
+
+rainsummary <- rainsummary %>%
+  mutate(raintype = "controlRain",
+         raintype = ifelse(Early < quantile(rainsummary$Early, .5), "fallDry", raintype),
+         raintype = ifelse(Late < quantile(rainsummary$Late, .5), "springDry", raintype),
+         raintype = ifelse(Total < quantile(rainsummary$Total, .5), "consistentDry", raintype)) 
+
+fall.dry <- length(which(rainsummary$raintype == "fallDry")) / nrow(rainsummary)
+spring.dry <- length(which(rainsummary$raintype == "springDry")) / nrow(rainsummary)
+consistent.dry <- length(which(rainsummary$raintype == "consistentDry")) / nrow(rainsummary)
+control.rain <- length(which(rainsummary$raintype == "controlRain")) / nrow(rainsummary)
+
+obs.avena <- subset(consistent.grwr.out$grwrChesson, consistent.grwr.out$invader =="Avena")
+GRWR.obs.avena <- consistent.dry*obs.avena[1] + fall.dry*obs.avena[2] + spring.dry*obs.avena[3] + control.rain*obs.avena[4]
+obs.erodium <- subset(consistent.grwr.out$grwrChesson, consistent.grwr.out$invader =="Erodium")
+GRWR.obs.erodium  <- consistent.dry*obs.erodium [1] + fall.dry*obs.erodium [2] + spring.dry*obs.erodium [3] + control.rain*obs.erodium [4]
+
+overall.grwr <- c(GRWR.avg.avena, GRWR.avg.erodium, GRWR.obs.avena, GRWR.obs.erodium)
+treatments <- c("Consistent", "Consistent", "Observed", "Observed")
+species <- c("Avena", "Erodium", "Avena", "Erodium")
+time.avg <- data.frame(cbind(species, treatments, overall.grwr)) %>%
+  mutate(overall.grwr = as.numeric(as.character(overall.grwr)))
+
+# ------------------------------------------------------------------------------------------------
+# Lauren H, can we make this graph pretty?
+# Absolutely! Although the Avena values so dwarf the Erodium ones, we might want to put it in the sup? Can't log because Erodium is less than 1 in consistent 
+ggplot(time.avg, aes(x=treatments, y=overall.grwr, fill=species)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
+  labs(x = "Long-Term Conditions", y = "Average growth rate when rare", fill = "Species") + theme(text = element_text(size = 24)) +
+  geom_hline(yintercept  =0) + scale_fill_manual(values = c("grey80", "grey30")) + theme(legend.position = "none")  #+ scale_y_log10()
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed.pdf"), width = 8, height = 6)
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed.jpg"), width = 8, height = 6)
+
+# Break it up by panels to avoid this issue
+ggplot(time.avg, aes(x=treatments, y=overall.grwr, fill=species)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
+  labs(x = "Long-term conditions", y = "Average growth rate when rare") + theme(text = element_text(size = 24)) +
+  geom_hline(yintercept  =0) + scale_fill_manual(values = c("grey80", "grey30")) + theme(legend.position = "none")  + facet_wrap(~species ,scales = "free") +
+  theme(strip.background = element_blank(), text = element_text(size = 16), 
+        strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed-faceted.pdf"), width = 8, height = 4)
+ggsave(here("Figs", "fig2b_avg-grwr-consistent-observed-faceted.jpg"), width = 8, height = 4)
+
+
+# ------------------------------------------------------------------------------------------------
 
 consistent.out2 <- consistent.out %>%
   gather(species, count, Na:Ne) %>%
@@ -207,16 +276,17 @@ ggplot(consistent.out2, aes(x=time, y=(count), color = species)) + geom_line(siz
   theme_bw() +  theme(text = element_text(size = 24), legend.position = "none", strip.background = element_blank(),
                       #strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + scale_y_log10(limits=c(.1, 1200), breaks = c( 1, 10, 100, 1000)) +
-  labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Time step") + scale_color_manual(values = c("tan3", "darkgreen"))
-#dev.off()
+  labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Time step") + scale_color_manual(values = c("grey80", "grey30"))
+ggsave(here("Figs", "fig3_consistent-simulation.pdf"), width = 12, height = 8)
+ggsave(here("Figs", "fig3_consistent-simulation.jpg"), width = 12, height = 8)
 
 
 #pdf("ddGRWRfromModel.pdf", width = 8, height = 6)
-ggplot(consistent.grwr.out, aes(x=treatment, y=log(grwr), fill=invader)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
-  labs(x = "Rainfall treatment", y = "Growth rate when rare (logged)", fill = "Species") + theme(text = element_text(size = 24)) +
-  geom_hline(yintercept  =0) + scale_fill_manual(values = c("tan3", "darkgreen")) + theme(legend.position = "none")
-#dev.off()
-
+ggplot(consistent.grwr.out, aes(x=treatment, y=grwrChesson, fill=invader)) + geom_bar(stat = "identity", position = "dodge") + theme_classic() + 
+  labs(x = "Rainfall treatment", y = expression("Growth rate when rare (r"[i]* "-r"[r]*")"), fill = "Species") + theme(text = element_text(size = 24)) +
+  geom_hline(yintercept  =0) + scale_fill_manual(values = c("grey80", "grey30")) + theme(legend.position = "none")
+ggsave(here("Figs", "fig2_GRWR-from-model.pdf"), width = 8, height = 6)
+ggsave(here("Figs", "fig2_GRWR-from-model.jpg"), width = 8, height = 6)
 
 
 # ## CHECK MODEL FITS
