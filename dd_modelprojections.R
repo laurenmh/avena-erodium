@@ -11,7 +11,7 @@ av1 <- togdat %>%
   filter(species == "Avena") %>%
   mutate(AVseedin = seed,
          AVseedout = seedsout) %>%
-  dplyr::select(plot, subplot, density, treatment, shelterBlock, AVseedin, AVseedout)
+  dplyr::select(plot, subplot, density, treatment, shelterBlock, AVseedin, AVseedout) 
 
 er1 <- togdat %>%
   filter(species == "Erodium") %>%
@@ -20,7 +20,9 @@ er1 <- togdat %>%
   dplyr::select(plot, subplot, density, treatment, shelterBlock, ERseedin, ERseedout)
 
 dat <- left_join(av1, er1) %>%
-  mutate(rm = ifelse(AVseedout/AVseedin > 60 & treatment == "fallDry", 1, 0))
+  mutate(rm = ifelse(AVseedout/AVseedin > 60 & treatment == "fallDry", 1, 0)) %>%
+  # remove D3 for being unrealistically high density
+   filter(density != "D3")
 
 treatments <- unique(dat$treatment)
 
