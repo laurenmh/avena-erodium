@@ -33,7 +33,8 @@ eg <- .6
 ##### ERODIUM MODEL ####
 ## With seed bank 
 
-m1 <- as.formula(log(ERseedout +1) ~  log((ERseedin*eg +1))*((lambda)/(1+aiE*.5*log((ERseedin*eg + 1)) + aiA*log(AVseedin*ag + 1))))
+#
+m1 <- as.formula(log(ERseedout +1) ~  log((ERseedin*eg +1))*((lambda)/(1+aiE*log((ERseedin*eg + 1)) + aiA*log(AVseedin*ag + 1))))
 
 treatments <- unique(togdat$treatment)
 
