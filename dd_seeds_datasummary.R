@@ -182,3 +182,4 @@ ggplot(subset(togdat2, species == "Avena" & R != 66), aes(x=(prop/10), y=(R)))+ 
         panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 ggsave(here("Figs", "fig1_avena-erodium-percapita.pdf"), width = 8, height = 8)
 ggsave(here("Figs", "fig1_avena-erodium-percapita.jpg"), width = 8, height = 8)
+
