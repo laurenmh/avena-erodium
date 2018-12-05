@@ -99,11 +99,24 @@ model.dat <- rbind(ERoutput, AVoutput) %>%
   dplyr::select(estimate, params, treatment, species) %>%
   spread(params, estimate)
 
-model.dat
+
 # ggplot(model.dat, aes(x=treatment, y=aiA)) + geom_bar(stat="identity") + facet_wrap(~species)
 # ggplot(model.dat, aes(x=treatment, y=aiE)) + geom_bar(stat="identity") + facet_wrap(~species)
 
-
+## put the output in table format
+parameter_table <- rbind(ERoutput, AVoutput) %>%
+  tbl_df() %>%
+  mutate_if(is.numeric, round, 2) %>%
+  mutate(sig = ifelse(p < 0.05, "**", ""),
+         sig = ifelse( p > 0.05 & p < 0.1, "*", "")) %>%
+  mutate(estimateout = paste(estimate, "±", se, sig)) %>%
+  dplyr::select(estimateout, params, treatment, species) %>%
+  spread(params, estimateout) %>%
+  select(treatment, species, lambda, aiA, aiE) %>%
+  mutate(lambda = ifelse(treatment == "fallDry" & species == "Erodium", "7.41 ± 3.64 *", lambda),
+         aiE = ifelse(treatment == "fallDry" & species == "Erodium", "0.000063 ± 0.0088 ", aiE),
+         aiA = ifelse(treatment == "fallDry" & species == "Erodium", "0.0096 ± 0.013 ", aiA)) %>%
+  arrange(species, treatment)
 
 
 ### RUN THE MODELS FOR EACH SPECIES AT EQUILIBRIUM OR INVADING FOR A CONSISTENT CLIMATE CONDITION ###
