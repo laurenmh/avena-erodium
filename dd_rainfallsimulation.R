@@ -34,6 +34,13 @@ ggplot(rainsummary, aes(x=year, y=Total))  + geom_line()+
   geom_point(aes(color = raintype), size = 4) + theme_bw() + labs(x="Year", y="Total rainfall (mm)")
 #dev.off()
 
+## Look at if and how scenarios are changing through time
+ggplot(rainsummary, aes(x=year, y=Total))  + 
+  geom_point(size = 1) + theme_bw() + labs(x="Year", y="Total rainfall (mm)") +
+  facet_wrap(~raintype) + geom_smooth(se=F)
+
+
+
 ### CREATE A FUNCTION THAT SETS VARIABLE PARAMETERS ACROSS TIMESTEPS ####
 variable.par <- function(model.dat, trtselect, t.num){
   par = as.data.frame(matrix(NA, nrow=t.num, ncol=7))
