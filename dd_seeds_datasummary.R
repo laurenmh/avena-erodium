@@ -150,7 +150,9 @@ erodat <- mydat2 %>%
   dplyr::select(plot, R, density, treatment, prop, shelterBlock, seed, species, seedsout, subplot)
 
 # Together
-togdat <- rbind(avdat, erodat)
+togdat <- rbind(avdat, erodat) %>%
+  # remove D3 for being unrealistically high density
+  filter(density != "D3")
 
 
 ## RAW VISUAL
@@ -159,8 +161,8 @@ togdat2 <- togdat %>%
   #   mutate(treatment = revalue(treatment, c(fallDry = "Fall dry", consistentDry = "Consistent dry", springDry = "Spring dry", controlRain = "Consistent wet"))) %>%
   mutate(treatment=ordered(treatment, levels = c( consistentDry="consistentDry", fallDry="fallDry",springDry="springDry", controlRain="controlRain"))) %>%
   mutate(treatment = recode(treatment, consistentDry = "Consistent dry", fallDry = "Fall dry",  springDry = "Spring dry", controlRain = "Consistent wet")) %>%
-  mutate(density = ordered(density, levels = c(D1 = "D1", D2 = "D2", D3 = "D3"))) %>%
-  mutate(density = recode(density, D1 = "Low density", D2 = "Moderate density", D3 = "High density"))
+  mutate(density = ordered(density, levels = c(D1 = "D1", D2 = "D2"))) %>%
+  mutate(density = recode(density, D1 = "Low density", D2 = "High density"))
 
 ggplot(subset(togdat2, species == "Avena" & R != 66), aes(x=(prop/10), y=(R)))+ geom_point(size = 4, color = "tan3")+ facet_grid(density~treatment,  scale="free") +
   geom_smooth(method="lm", color ="tan3", lwd = 2, se = F) + theme_bw() + ylab("Per capita population growth rate") + 
@@ -180,6 +182,6 @@ ggplot(subset(togdat2, species == "Avena" & R != 66), aes(x=(prop/10), y=(R)))+ 
   theme(strip.background = element_blank(), text = element_text(size = 16), 
         strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-ggsave(here("Figs", "fig1_avena-erodium-percapita.pdf"), width = 8, height = 8)
-ggsave(here("Figs", "fig1_avena-erodium-percapita.jpg"), width = 8, height = 8)
+ggsave(here("Figs", "fig1_avena-erodium-percapita.pdf"), width = 8, height = 6)
+ggsave(here("Figs", "fig1_avena-erodium-percapita.jpg"), width = 8, height = 6)
 
