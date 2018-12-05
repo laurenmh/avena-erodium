@@ -51,7 +51,7 @@ ERoutput <- as.data.frame(matrix(nrow = 0, ncol = 7))
 names(ERoutput) = c("estimate", "se", "t", "p", "params", "treatment", "species")
 for (i in 1:length(treatments)){
   m1out <- nlsLM(m1, start=list(lambda=1, aiE = .01, aiA=.01),
-                 lower = c(0, 0, 0), upper = c(200, 1, 1),
+                 lower = c(0, 0, 0), upper = c(30, 1, 1),
                  control=nls.lm.control(maxiter=500), trace=T,
                  data = subset(dat, !is.na(ERseedout) & treatment == treatments[i]))
   
@@ -82,7 +82,7 @@ for (i in 1:length(treatments)){
   
   m1out <- nlsLM(m1, start=list(lambda=1, aiE = .01, aiA=.01), 
                  control=nls.lm.control(maxiter=500), 
-                 lower = c(0, 0, 0), upper = c(200, 1, 1),
+                 lower = c(0, 0, 0), upper = c(100, 1, 1),
                  trace=T,
                  data = subset(dat, !is.na(AVseedout) & treatment == treatments[i] & rm == 0))
   outreport <- as.data.frame(summary(m1out)$coef[1:3, 1:4])
@@ -99,6 +99,7 @@ model.dat <- rbind(ERoutput, AVoutput) %>%
   dplyr::select(estimate, params, treatment, species) %>%
   spread(params, estimate)
 
+model.dat
 # ggplot(model.dat, aes(x=treatment, y=aiA)) + geom_bar(stat="identity") + facet_wrap(~species)
 # ggplot(model.dat, aes(x=treatment, y=aiE)) + geom_bar(stat="identity") + facet_wrap(~species)
 
@@ -112,25 +113,13 @@ model.dat <- rbind(ERoutput, AVoutput) %>%
 
 growth = function(N, par.dat, t.num){
   for (i in 1:(t.num-1)){
-    N$Na[i+1] = as*(1-ag)*N$Na[i]  + ag*N$Na[i]*exp(log(par.dat$Alambda[i])-log(1 + par.dat$AaiE[i]*eg*N$Ne[i] + par.dat$AaiA*ag*N$Na[i]))
-
-    N$Ne[i+1] = es*(1-eg)*N$Ne[i] + eg*N$Ne[i]*exp(log(par.dat$Elambda[i])-log(1 + par.dat$EaiE[i]*eg*N$Ne[i] + par.dat$EaiA[i]*ag*N$Na[i]))
+    N$Na[i+1] = as*(1-ag)*N$Na[i]  + ag*N$Na[i]*(par.dat$Alambda[i]/(1 + par.dat$AaiE[i]*eg*N$Ne[i] + par.dat$AaiA*ag*N$Na[i]))
     
-    }
+    N$Ne[i+1] = es*(1-eg)*N$Ne[i] + eg*N$Ne[i]*(par.dat$Elambda[i]/(1 + par.dat$EaiE[i]*eg*N$Ne[i] + par.dat$EaiA[i]*ag*N$Na[i]))
+    
+  }
   return(N)
 }
-
-# old growth function
-# growth = function(N, par.dat, t.num){
-#   for (i in 1:(t.num-1)){
-#     N$Na[i+1] = as*(1-ag)*N$Na[i] + exp(log(N$Na[i]*ag+1)*par.dat$Alambda[i]/(1 + par.dat$AaiE[i]*log((N$Ne[i] + 1)*eg) +  par.dat$AaiA[i]*log(N$Na[i]*ag + 1))) -1
-#     #  N$Na[i+1] =ifelse(N$Na[i +1] == 1, 0, N$Na[i + 1])
-#     N$Ne[i+1] = es*(1-eg)*N$Ne[i] + exp(log((N$Ne[i]*eg + 1))*par.dat$Elambda[i]/(1 + par.dat$EaiE[i]*log((N$Ne[i]*eg + 1)) + par.dat$EaiA[i]*log(N$Na[i]*ag + 1))) -1
-#     # N$Ne[i+1] =ifelse(N$Ne[i +1] == 1, 0, N$Ne[i + 1])
-#   }
-#   return(N)
-# }
-
 
 ### CREATE A FUNCTION THAT CALCULATES POPULATION CHANGE OVER TIME AND GRWR ####
 
