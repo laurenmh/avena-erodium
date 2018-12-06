@@ -2,7 +2,7 @@
 
 # load the data
 #load("model.dat.output.RData")
-source("model.R")
+source("models.R")
 # First determine how common each environmental type is
 
 # what about for what we actually see in terms of the number of years in each env. condition
@@ -312,9 +312,9 @@ erodium_epsilon_interaction <- mean(erodium_invader) -
 avena_LDGR <- mean(avena_invader)
 erodium_LDGR <- mean(erodium_invader)
 
-avena_results <- c(avena_LDGR, avena_epilson_0, avena_epsilon_alpha, 
+avena_results_unweighted <- c(avena_LDGR, avena_epilson_0, avena_epsilon_alpha, 
                    avena_epsilon_lambda, avena_epsilon_interaction)
-erodium_results <- c(erodium_LDGR, erodium_epilson_0, erodium_epsilon_alpha, 
+erodium_results_unweighted <- c(erodium_LDGR, erodium_epilson_0, erodium_epsilon_alpha, 
                      erodium_epsilon_lambda, erodium_epsilon_interaction)
 # check that all epsilons add to give the LDGR
 avena_epilson_0 + avena_epsilon_alpha + avena_epsilon_lambda + avena_epsilon_interaction
