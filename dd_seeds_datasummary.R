@@ -34,21 +34,44 @@ trtconvert <- mydat %>%
 
 ## APRIL DATA
 mydat_apr <- read_csv("Data/dd_stem_count_20150423.csv") %>%
-mutate(AVcor=1, AVcor=ifelse(AVquadrat2 == "10x25cm", 2.5, AVcor),
-       AVcor=ifelse(AVquadrat2 == "5x5cm", 25, AVcor)) %>%
-mutate(EROcor=1, EROcor=ifelse(EROquadrat2 == "10x25cm", 2.5, EROcor),
-       EROcor=ifelse(EROquadrat2 == "5x5cm", 25, EROcor)) %>%
-  mutate(AV_seeds=(AVgoodseed + AVmoldseed)*2*AVcor,
-         AV_seedsgood=AVgoodseed*2*AVcor) %>%
-    mutate(AV_propgood = AV_seedsgood/AV_seeds) %>%
-  mutate(ERO_seeds=(EROstork + EROseed)*5*EROcor) %>%
-  mutate(AV_stemtog=NA, AV_stemtog = ifelse(is.na(AVstemsTotal) == F, AVstemsTotal, AV_stemtog),
-                AV_stemtog = ifelse(is.na(AVstemswseed) == F, AVstemswseed, AV_stemtog), 
-    AV_stems = (AV_stemtog)*AVcor,
-         ERO_stems = EROcount*EROcor) %>%
-  mutate(AV_r = AV_seeds/AV_stems,
-         ERO_r = ERO_seeds/ERO_stems) %>%
-  dplyr::select(plot, subplot, AV_seeds, ERO_seeds, AV_stems, ERO_stems, AV_r, ERO_r, AV_seedsgood, AV_propgood)
+  mutate(
+    AVcor = 1,
+    AVcor = ifelse(AVquadrat2 == "10x25cm", 2.5, AVcor),
+    AVcor = ifelse(AVquadrat2 == "5x5cm", 25, AVcor)
+  ) %>%
+  mutate(
+    EROcor = 1,
+    EROcor = ifelse(EROquadrat2 == "10x25cm", 2.5, EROcor),
+    EROcor = ifelse(EROquadrat2 == "5x5cm", 25, EROcor)
+  ) %>%
+  mutate(
+    AV_seeds = (AVgoodseed + AVmoldseed) * 2 * AVcor,
+    AV_seedsgood = AVgoodseed * 2 * AVcor
+  ) %>%
+  mutate(AV_propgood = AV_seedsgood / AV_seeds) %>%
+  mutate(ERO_seeds = (EROstork + EROseed) * 5 * EROcor) %>%
+  mutate(
+    AV_stemtog = NA,
+    AV_stemtog = ifelse(is.na(AVstemsTotal) == F, AVstemsTotal, AV_stemtog),
+    AV_stemtog = ifelse(is.na(AVstemswseed) == F, AVstemswseed, AV_stemtog),
+    AV_stems = (AV_stemtog) * AVcor,
+    ERO_stems = EROcount * EROcor
+  ) %>%
+  mutate(AV_r = AV_seeds / AV_stems,
+         ERO_r = ERO_seeds / ERO_stems) %>%
+  dplyr::select(
+    plot,
+    subplot,
+    AV_seeds,
+    ERO_seeds,
+    AV_stems,
+    ERO_stems,
+    AV_r,
+    ERO_r,
+    AV_seedsgood,
+    AV_propgood
+  )
+
 
 trtconvert2 <- trtconvert %>%
   mutate(plot = extract_numeric(plot))
@@ -61,11 +84,119 @@ mydat_apr2 <- tbl_df(merge(mydat_apr, trtconvert2))
 shelterkey <- read_csv("Data/Shelter_key.csv")
 mydat2 <- merge(mydat_apr2, shelterkey) %>%
   tbl_df() %>%
-gather(spptrt, prop, AVtrt:EROtrt)%>%
-  mutate(prop=extract_numeric(prop))%>%
-  mutate(treatment=ordered(treatment, levels = c(consistentDry="consistentDry", fallDry="fallDry", springDry="springDry", controlRain="controlRain")))
+  gather(spptrt, prop, AVtrt:EROtrt) %>%
+  mutate(prop = extract_numeric(prop)) %>%
+  mutate(treatment = ordered(
+    treatment,
+    levels = c(
+      consistentDry = "consistentDry",
+      fallDry = "fallDry",
+      springDry = "springDry",
+      controlRain = "controlRain"
+    )
+  ))
 
-# #just look at the monocultures
+## APPEND DATA
+# Avena
+avdat <- mydat2 %>%
+  mutate(density = as.character(density)) %>%
+  filter(spptrt == "AVtrt") %>%
+  mutate(
+    seed = 20 * (prop / 10),
+    seed = ifelse(density == "D2", 200 * (prop / 10), seed),
+    seed = ifelse(density == "D3", 2000 * (prop / 10), seed)
+  ) %>%
+  mutate(
+    AV_stemcorrect = 1,
+    AV_stemcorrect = ifelse(AV_stems > seed, seed / AV_stems, AV_stemcorrect)
+  ) %>%
+  mutate(AV_seeds2 = AV_seeds * AV_stemcorrect) %>%
+  mutate(seedsout = AV_seedsgood * AV_stemcorrect) %>%
+  mutate(R = seedsout / seed) %>%
+  mutate(species = "Avena") %>%
+  dplyr::select(plot,
+                R,
+                density,
+                treatment,
+                prop,
+                shelterBlock,
+                seed,
+                species,
+                seedsout,
+                subplot)
+
+# Erodium
+erodat <- mydat2 %>%
+  filter(spptrt == "EROtrt") %>%
+  mutate(
+    seed = 20 * (prop / 10),
+    seed = ifelse(density == "D2", 200 * (prop / 10), seed),
+    seed = ifelse(density == "D3", 2000 * (prop / 10), seed)
+  ) %>%
+  mutate(
+    ERO_stemcorrect = 1,
+    ERO_stemcorrect = ifelse(ERO_stems > seed, seed / ERO_stems, ERO_stemcorrect)
+  ) %>%
+  mutate(seedsout = ERO_seeds * ERO_stemcorrect) %>%
+  mutate(R = seedsout / seed) %>%
+  mutate(species = "Erodium") %>%
+  dplyr::select(plot,
+                R,
+                density,
+                treatment,
+                prop,
+                shelterBlock,
+                seed,
+                species,
+                seedsout,
+                subplot)
+
+# Together
+togdat <- rbind(avdat, erodat) %>%
+  # remove D3 for being unrealistically high density
+  filter(density != "D3")
+
+
+
+# ## PRELIMINARY VISUALIZATIONS
+# 
+# # Erodium
+# ero <- mydat2 %>%
+#   filter(spptrt=="EROtrt") %>%
+#   mutate(seed=20*(prop/10), seed=ifelse(density=="D2", 200*(prop/10), seed), seed=ifelse(density=="D3", 2000*(prop/10), seed)) %>%
+#   mutate(ERO_stemcorrect=1, ERO_stemcorrect=ifelse(ERO_stems > seed, seed/ERO_stems, ERO_stemcorrect)) %>%
+#   mutate(ERO_seeds2=ERO_seeds*ERO_stemcorrect) %>%
+#   mutate(R=ERO_seeds/seed) %>%
+#   ggplot(aes(x=(prop/10), y=R))+ geom_point()+ facet_grid(density~treatment, scale="free") 
+# 
+# ero + geom_smooth(method="lm") +theme_bw() +ylab("Per capita growth rate") + xlab("Seeding ratio") + ggtitle("Erodium") #+ ylim(0,.5)
+# 
+# # Avena
+# av <- mydat2 %>%
+#   filter(spptrt=="AVtrt") %>%
+#  # filter(density=="D1") %>%
+#   mutate(seed=20*(prop/10), seed=ifelse(density=="D2", 200*(prop/10), seed), seed=ifelse(density=="D3", 2000*(prop/10), seed)) %>%
+#   mutate(AV_stemcorrect=1, AV_stemcorrect=ifelse(AV_stems > seed, seed/AV_stems, AV_stemcorrect))%>%
+#   mutate(AV_seeds2=AV_seeds*AV_stemcorrect) %>%
+#   mutate(AV_seedsgood2=AV_seedsgood*AV_stemcorrect) %>%
+#   mutate(R=AV_seedsgood2/seed)%>%
+#   ggplot(aes(x=(prop/10), y=R))+ geom_point()+ facet_grid(density~treatment,  scale="free")
+# av + geom_smooth(method="lm") + theme_bw()+ylab("Per capita growth rate") + xlab("Seeding ratio") + ggtitle("Avena")
+#   
+# 
+# ## Prop viable
+# av_propgood <- mydat2 %>%
+#   filter(spptrt=="AVtrt")%>%
+#   # filter(density=="D1") %>%
+#   mutate(seed=20*(prop/10), seed=ifelse(density=="D2", 200*(prop/10), seed), seed=ifelse(density=="D3", 2000*(prop/10), seed))%>%
+#   mutate(AV_stemcorrect=1, AV_stemcorrect=ifelse(AV_stems > seed, seed/AV_stems, AV_stemcorrect))%>%
+#   mutate(AV_seeds2=AV_seeds*AV_stemcorrect) %>%
+#   mutate(AV_seedsgood2=AV_seedsgood*AV_stemcorrect) %>%
+#   mutate(R=AV_seedsgood2/seed)%>%
+#   ggplot(aes(x=(prop/10), y=AV_propgood))+ geom_point()+ facet_grid(density~treatment,  scale="free")
+# av_propgood + geom_smooth(method="lm") + theme_bw()+ylab("Proportion of viable Avena seeds") + xlab("Seeding ratio")
+
+# # Just look at the monocultures
 # mono <- mydat2 %>%
 #   filter(prop==10) %>%
 #   select(plot, subplot, density, ERO_seeds, AV_seedsgood, treatment, shelterBlock, spptrt, prop)%>%
@@ -77,73 +208,4 @@ gather(spptrt, prop, AVtrt:EROtrt)%>%
 # 
 # mono+theme_bw()
 
-
-## PRELIMINARY VISUALIZATIONS
-
-# Erodium
-ero <- mydat2 %>%
-  filter(spptrt=="EROtrt") %>%
-  mutate(seed=20*(prop/10), seed=ifelse(density=="D2", 200*(prop/10), seed), seed=ifelse(density=="D3", 2000*(prop/10), seed)) %>%
-  mutate(ERO_stemcorrect=1, ERO_stemcorrect=ifelse(ERO_stems > seed, seed/ERO_stems, ERO_stemcorrect)) %>%
-  mutate(ERO_seeds2=ERO_seeds*ERO_stemcorrect) %>%
-  mutate(R=ERO_seeds/seed) %>%
-  ggplot(aes(x=(prop/10), y=R))+ geom_point()+ facet_grid(density~treatment, scale="free") 
-
-ero + geom_smooth(method="lm") +theme_bw() +ylab("Per capita growth rate") + xlab("Seeding ratio") + ggtitle("Erodium") #+ ylim(0,.5)
-
-# Avena
-av <- mydat2 %>%
-  filter(spptrt=="AVtrt") %>%
- # filter(density=="D1") %>%
-  mutate(seed=20*(prop/10), seed=ifelse(density=="D2", 200*(prop/10), seed), seed=ifelse(density=="D3", 2000*(prop/10), seed)) %>%
-  mutate(AV_stemcorrect=1, AV_stemcorrect=ifelse(AV_stems > seed, seed/AV_stems, AV_stemcorrect))%>%
-  mutate(AV_seeds2=AV_seeds*AV_stemcorrect) %>%
-  mutate(AV_seedsgood2=AV_seedsgood*AV_stemcorrect) %>%
-  mutate(R=AV_seedsgood2/seed)%>%
-  ggplot(aes(x=(prop/10), y=R))+ geom_point()+ facet_grid(density~treatment,  scale="free")
-av + geom_smooth(method="lm") + theme_bw()+ylab("Per capita growth rate") + xlab("Seeding ratio") + ggtitle("Avena")
-  
-
-## Prop viable
-av_propgood <- mydat2 %>%
-  filter(spptrt=="AVtrt")%>%
-  # filter(density=="D1") %>%
-  mutate(seed=20*(prop/10), seed=ifelse(density=="D2", 200*(prop/10), seed), seed=ifelse(density=="D3", 2000*(prop/10), seed))%>%
-  mutate(AV_stemcorrect=1, AV_stemcorrect=ifelse(AV_stems > seed, seed/AV_stems, AV_stemcorrect))%>%
-  mutate(AV_seeds2=AV_seeds*AV_stemcorrect) %>%
-  mutate(AV_seedsgood2=AV_seedsgood*AV_stemcorrect) %>%
-  mutate(R=AV_seedsgood2/seed)%>%
-  ggplot(aes(x=(prop/10), y=AV_propgood))+ geom_point()+ facet_grid(density~treatment,  scale="free")
-av_propgood + geom_smooth(method="lm") + theme_bw()+ylab("Proportion of viable Avena seeds") + xlab("Seeding ratio")
-
-
-## APPEND DATA
-# Avena
-avdat <- mydat2 %>%
-  mutate(density = as.character(density)) %>%
-  filter(spptrt=="AVtrt")%>%
-  mutate(seed=20*(prop/10), 
-         seed=ifelse(density=="D2", 200*(prop/10), seed), 
-         seed=ifelse(density=="D3", 2000*(prop/10), seed)) %>%
-  mutate(AV_stemcorrect=1, AV_stemcorrect=ifelse(AV_stems > seed, seed/AV_stems, AV_stemcorrect))%>%
-  mutate(AV_seeds2=AV_seeds*AV_stemcorrect) %>%
-  mutate(seedsout=AV_seedsgood*AV_stemcorrect) %>%
-  mutate(R=seedsout/seed) %>%
-  mutate(species="Avena") %>%
-  dplyr::select(plot, R, density, treatment, prop, shelterBlock, seed, species, seedsout, subplot)
-
-# Erodium
-erodat <- mydat2 %>%
-  filter(spptrt=="EROtrt")%>%
-  mutate(seed=20*(prop/10), seed=ifelse(density=="D2", 200*(prop/10), seed), seed=ifelse(density=="D3", 2000*(prop/10), seed))%>%
-  mutate(ERO_stemcorrect=1, ERO_stemcorrect=ifelse(ERO_stems > seed, seed/ERO_stems, ERO_stemcorrect))%>%
-  mutate(seedsout=ERO_seeds*ERO_stemcorrect) %>%
-  mutate(R=seedsout/seed) %>%
-  mutate(species="Erodium") %>%
-  dplyr::select(plot, R, density, treatment, prop, shelterBlock, seed, species, seedsout, subplot)
-
-# Together
-togdat <- rbind(avdat, erodat) %>%
-  # remove D3 for being unrealistically high density
-  filter(density != "D3")
 
