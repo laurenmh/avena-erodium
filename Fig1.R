@@ -22,9 +22,28 @@ g <- ggplotGrob(p)
 
 pdf(here("Figs", "fig1.pdf"), width = 8, height = 6)
 p
-grid.text(letters[1:8],x = c(0.09,0.31,.53,.76 ),y = c(rep(.91, 4), rep(.48, 4)),
+grid.text(c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "(g)", "(h)"),x = c(0.26,0.48,.7,.925 ),
+          y = c(rep(.91, 4), rep(.48, 4)),
           gp=gpar(fontsize=16))
 dev.off()
+
+
+## just letters no parantheses
+# pdf(here("Figs", "fig1.pdf"), width = 8, height = 6)
+# p
+# grid.text(letters[1:8],x = c(0.09,0.31,.53,.76 ),y = c(rep(.91, 4), rep(.48, 4)),
+#           gp=gpar(fontsize=16))
+# dev.off()
+
+## on the left
+# pdf(here("Figs", "fig1.pdf"), width = 8, height = 6)
+# p
+# grid.text(c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "(g)", "(h)"),x = c(0.09,0.31,.53,.752 ),
+#           y = c(rep(.91, 4), rep(.48, 4)),
+#           gp=gpar(fontsize=12))
+# dev.off()
+
+
 
 
           
