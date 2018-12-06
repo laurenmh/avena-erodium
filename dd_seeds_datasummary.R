@@ -116,13 +116,6 @@ av_propgood <- mydat2 %>%
   ggplot(aes(x=(prop/10), y=AV_propgood))+ geom_point()+ facet_grid(density~treatment,  scale="free")
 av_propgood + geom_smooth(method="lm") + theme_bw()+ylab("Proportion of viable Avena seeds") + xlab("Seeding ratio")
 
-# 
-# 
-# pdf("ddExperiment_growthrate_20150423.pdf")
-#  ero+geom_smooth(method = "lm", formula = y ~ poly(x,2)) +theme_bw() + xlab("Seeding ratio") +ylab("Per capita growth rate") + 
-#   ggtitle("Erodium") + geom_hline(y=1)
-# av+geom_smooth(method = "lm") + theme_bw()+ xlab("Seeding ratio")+ylab("Per capita growth rate")  + ggtitle("Avena") + geom_hline(y=1)
-# dev.off()
 
 ## APPEND DATA
 # Avena
@@ -153,35 +146,4 @@ erodat <- mydat2 %>%
 togdat <- rbind(avdat, erodat) %>%
   # remove D3 for being unrealistically high density
   filter(density != "D3")
-
-
-## RAW VISUAL
-togdat2 <- togdat %>%
-  mutate(treatment = as.character(treatment)) %>%
-  #   mutate(treatment = revalue(treatment, c(fallDry = "Fall dry", consistentDry = "Consistent dry", springDry = "Spring dry", controlRain = "Consistent wet"))) %>%
-  mutate(treatment=ordered(treatment, levels = c( consistentDry="consistentDry", fallDry="fallDry",springDry="springDry", controlRain="controlRain"))) %>%
-  mutate(treatment = recode(treatment, consistentDry = "Consistent dry", fallDry = "Fall dry",  springDry = "Spring dry", controlRain = "Consistent wet")) %>%
-  mutate(density = ordered(density, levels = c(D1 = "D1", D2 = "D2"))) %>%
-  mutate(density = recode(density, D1 = "Low density", D2 = "High density"))
-
-ggplot(subset(togdat2, species == "Avena" & R != 66), aes(x=(prop/10), y=(R)))+ geom_point(size = 4, color = "tan3")+ facet_grid(density~treatment,  scale="free") +
-  geom_smooth(method="lm", color ="tan3", lwd = 2, se = F) + theme_bw() + ylab("Per capita population growth rate") + 
-  geom_point(dat = subset(togdat2, species == "Erodium"), size = 4, color = "darkgreen") +
-  geom_smooth(dat = subset(togdat2, species == "Erodium"), method="lm", color = "darkgreen", lwd = 2, se = F) +
-  xlab("Seeding ratio")  + geom_hline(yintercept=1) + scale_x_continuous(limits = c(0, 1), breaks = c(.1, .5, .9, 1)) + 
-  theme(strip.background = element_blank(), text = element_text(size = 16), 
-        strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-## BW version
-ggplot(subset(togdat2, species == "Avena" & R != 66), aes(x=(prop/10), y=(R)))+ geom_point(size = 3, color = "grey80")+ facet_grid(density~treatment,  scale="free") +
-  geom_smooth(method="lm", color ="grey80", lwd = 1.5, se = F) + theme_bw() + ylab("Per capita population growth rate") + 
-  geom_point(dat = subset(togdat2, species == "Erodium"), size = 3, color = "grey30") +
-  geom_smooth(dat = subset(togdat2, species == "Erodium"), method="lm", color = "grey30", lwd = 1.5, se = F) +
-  xlab("Seeding ratio")  + geom_hline(yintercept=1) + scale_x_continuous(limits = c(0, 1), breaks = c(.1, .5, .9, 1), labels = c(".1", ".5", ".9", "1")) + 
-  theme(strip.background = element_blank(), text = element_text(size = 16), 
-        strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-ggsave(here("Figs", "fig1_avena-erodium-percapita.pdf"), width = 8, height = 6)
-ggsave(here("Figs", "fig1_avena-erodium-percapita.jpg"), width = 8, height = 6)
 

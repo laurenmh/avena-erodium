@@ -4,6 +4,15 @@ library(tidyverse)
 library(here)
 library(grid)
 
+## RAW VISUAL
+togdat2 <- togdat %>%
+  mutate(treatment = as.character(treatment)) %>%
+  #   mutate(treatment = revalue(treatment, c(fallDry = "Fall dry", consistentDry = "Consistent dry", springDry = "Spring dry", controlRain = "Consistent wet"))) %>%
+  mutate(treatment=ordered(treatment, levels = c( consistentDry="consistentDry", fallDry="fallDry",springDry="springDry", controlRain="controlRain"))) %>%
+  mutate(treatment = recode(treatment, consistentDry = "Consistent dry", fallDry = "Fall dry",  springDry = "Spring dry", controlRain = "Consistent wet")) %>%
+  mutate(density = ordered(density, levels = c(D1 = "D1", D2 = "D2"))) %>%
+  mutate(density = recode(density, D1 = "Low density", D2 = "High density"))
+
 ## BW version
 p <- ggplot(subset(togdat2, species == "Avena" & R != 66), aes(x=(prop/10), y=(R)))+ geom_point(size = 3, color = "grey80")+ facet_grid(density~treatment,  scale="free") +
   geom_smooth(method="lm", color ="grey80", lwd = 1.5, se = F) + theme_bw() + ylab("Per capita population growth rate") + 
