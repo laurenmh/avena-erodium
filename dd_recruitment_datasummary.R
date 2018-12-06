@@ -72,14 +72,15 @@ avdat <-mydat2 %>%
 # Put it all together
 recruittog <- rbind(erodat[c("plot", "subplot", "prop", "propgerm", "density", "treatment", "species")], 
                     avdat[c("plot", "subplot", "prop", "propgerm", "density", "treatment", "species")])  %>%
+  filter(density != "D3") %>%
   mutate(treatment=ordered(treatment, levels = c( consistentDry="consistentDry", fallDry="fallDry",springDry="springDry", controlRain="controlRain"))) %>%
   mutate(treatment = recode(treatment, consistentDry = "Consistent dry", fallDry = "Fall dry",  springDry = "Spring dry", controlRain = "Consistent wet")) %>%
-  mutate(density = ordered(density, levels = c(D1 = "D1", D2 = "D2", D3 = "D3"))) %>%
-  mutate(density = recode(density, D1 = "Low density", D2 = "Moderate density", D3 = "High density"))
+  mutate(density = ordered(density, levels = c(D1 = "D1", D2 = "D2"))) %>%
+  mutate(density = recode(density, D1 = "Low density", D2 = "High density"))
 
 
 ## BW version
-ggplot(subset(recruittog, species == "Avena"), aes(x=(prop/10), y=(propgerm))) + 
+r <- ggplot(subset(recruittog, species == "Avena"), aes(x=(prop/10), y=(propgerm))) + 
   geom_point(size = 3, color = "grey80") + facet_grid(density~treatment,  scale="free") +
   geom_smooth(method="lm", color ="grey80", lwd = 1.5, se = F) + 
   theme_bw() + ylab("Percent recruitment") + 
@@ -89,10 +90,17 @@ ggplot(subset(recruittog, species == "Avena"), aes(x=(prop/10), y=(propgerm))) +
   xlab("Seeding ratio")  +
   scale_x_continuous(limits = c(0, 1), breaks = c(.1, .5, .9, 1), 
                      labels = c(".1", ".5", ".9", "1")) + 
-  scale_y_continuous(limits = c(0,1), breaks = c(0, .25, .5, .75, 1)) + 
+  scale_y_continuous(limits = c(0,1.15), breaks = c(0, .25, .5, .75, 1)) + 
   theme(strip.background = element_blank(), text = element_text(size = 16), 
         strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
-ggsave(here("Figs", "figS1_avena-erodium-germination.pdf"), width = 8, height = 8)
-ggsave(here("Figs", "figS1_avena-erodium-germination.jpg"), width = 8, height = 8)
+# ggsave(here("Figs", "figS1_avena-erodium-germination.pdf"), width = 8, height = 8)
+# ggsave(here("Figs", "figS1_avena-erodium-germination.jpg"), width = 8, height = 8)
+
+pdf(here("Figs", "figS1.pdf"), width = 8, height =5)
+r
+grid.text(c("(a)", "(b)", "(c)", "(d)", "(e)", "(f)", "(g)", "(h)"),x = c(0.27,0.49,.71,.925 ),
+          y = c(rep(.895, 4), rep(.48, 4)),
+          gp=gpar(fontsize=16))
+dev.off()
