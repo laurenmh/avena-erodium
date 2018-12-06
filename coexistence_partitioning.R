@@ -1,8 +1,8 @@
 # Create figure 2b -- low density growth rates for observed environment
 
 # load the data
-#load("model.dat.output.RData")
-source("models.R")
+load("model.dat.output.RData")
+
 # First determine how common each environmental type is
 
 # what about for what we actually see in terms of the number of years in each env. condition
