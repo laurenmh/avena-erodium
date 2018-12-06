@@ -1,4 +1,4 @@
-source("dd_modelprojections.R")
+source("modelprojections.R")
 source("coexistence_partitioning.R")
 
 library(tidyverse)
@@ -9,7 +9,8 @@ calcSE<-function(x){
   sd(x)/sqrt(length(x))
 }
 
-## data for consistent from modelprojections
+### CONSISTENT 
+
 dat2a <- consistent.grwr.out %>%
   select(invader, treatment, grwrChesson) %>%
   mutate(sdgrwr = NA, segrwr = NA)

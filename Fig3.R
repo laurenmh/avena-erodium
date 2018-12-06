@@ -1,7 +1,7 @@
 library(tidyverse)
 library(here)
-source("dd_modelprojections.R")
-source("dd_rainfallsimulations.R")
+source("modelprojections.R")
+source("rainfallsimulations.R")
 
 ### CREATE A FUNCTION THAT SETS VARIABLE PARAMETERS ACROSS TIMESTEPS ####
 variable.par <- function(model.dat, trtselect, t.num){
