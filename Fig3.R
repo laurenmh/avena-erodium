@@ -49,7 +49,7 @@ variable.out2 <- variable.out %>%
   mutate(vartreatmentprev=ordered(vartreatmentprev, levels = c(fallDry="fallDry", consistentDry="consistentDry", springDry="springDry", controlRain="controlRain")))
 
 # Plot it
-ggplot(variable.out2, aes(x=time, y=(count), color = species)) + geom_line(size = 4) + 
+ggplot(variable.out2, aes(x=time, y=(count), color = species)) + geom_line(size = 2) + 
   theme_bw() +  theme(text = element_text(size = 24), legend.position = "none",
                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +  scale_y_log10() + #scale_y_log10(limits=c(.1, 1200), breaks = c(1, 10, 100, 1000)) +
   labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Time step")  + scale_color_manual(values = c("grey80", "grey30")) # +
