@@ -38,4 +38,4 @@ ggplot(dat2, aes(x=params, y=value, fill = mycol)) + geom_bar(stat = "identity")
         axis.text.x = element_text(size = 20)) +
   scale_fill_manual(values = c( "grey40", "grey70")) + 
   ylab("Low density growth rate partitioning") 
-
+ggsave(here("Figs", "Fig4.pdf"), width = 8, height = 5)
