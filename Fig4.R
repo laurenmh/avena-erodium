@@ -37,5 +37,5 @@ ggplot(dat2, aes(x=params, y=value, fill = mycol)) + geom_bar(stat = "identity")
         panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         axis.text.x = element_text(size = 20)) +
   scale_fill_manual(values = c( "grey40", "grey70")) + 
-  ylab("Low density growth rate partitioning") 
+  ylab("Partitioning of growth rate when rare") 
 ggsave(here("Figs", "Fig4.pdf"), width = 8, height = 5)
