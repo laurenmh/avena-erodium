@@ -1,5 +1,8 @@
 library(nlme)
 library(multcomp)
+library(xtable)
+source("recruitment_datasummary.R")
+source("seeds_datasummary.R")
 
 ### CODE FOR MIXED-EFFECT MODELS OF RECRUITMENT AND FECUNDITY ###
 
@@ -27,7 +30,10 @@ l <- lm(propgerm~prop*density + prop*treatment1, data = subset(alltog, species =
 summary(l)    
 
 l <- lme(propgerm ~ prop*treatment1 + prop*density, random = ~1|shelterBlock, data = subset(alltog, species == "Erodium" & !is.na(propgerm)))
-summary(l)
+l1 <- summary(l)[5]
+
+l2 <- tidy(l, effects = "fixed")
+xtable(l2)
 
 ## Now just do yes versus no for fall rain
 l <- lm(propgerm~prop*density + prop*fallrain, data = subset(alltog, species == "Erodium", !is.na(propgerm)))
@@ -52,6 +58,8 @@ summary(l)
 l <- lme(propgerm ~ prop*treatment1 + prop*density, random = ~1|shelterBlock, data = subset(alltog, species == "Avena" & !is.na(propgerm)))
 summary(l)
 
+l2 <- tidy(l, effects = "fixed")
+xtable(l2)
 ## Now just do yes versus no for fall rain
 l <- lm(propgerm~prop*density + prop*fallrain, data = subset(alltog, species == "Avena", !is.na(propgerm)))
 summary(l)    
@@ -80,13 +88,15 @@ summary(l)
 l <- lme(R ~ denstrtprop, random = ~1|shelterBlock, data = subset(alltog, species == "Erodium" & !is.na(propgerm)))
 summary(l)   
 
+
 summary(glht(l, linfct=mcp(denstrtprop="Tukey")))
 
 
 
 l <- lme(R ~ prop*density*treatment1, random = ~1|shelterBlock, data = subset(alltog, species == "Erodium" & !is.na(propgerm)))
 summary(l)
-
+l2 <- tidy(l, effects = "fixed")
+xtable(l2)
 
 ## Now just do yes versus no for fall rain
 l <- lm(R~prop*density + prop*fallrain, data = subset(alltog, species == "Erodium", !is.na(propgerm)))
@@ -136,6 +146,9 @@ summary(l)
 
 l <- lme(R ~ prop*treatment1 +prop*density, random = ~1|shelterBlock, data = subset(alltog, species == "Erodium" & !is.na(propgerm)))
 summary(l)
+l2 <- tidy(l, effects = "fixed")
+xtable(l2)
+
 
 ## Now just do yes versus no for fall rain
 l <- lm(R~prop*density + prop*fallrain, data = subset(alltog, species == "Erodium", !is.na(propgerm)))
@@ -157,6 +170,8 @@ summary(l)
 
 l <- lme(R ~ prop*treatment1 + prop*density, random = ~1|shelterBlock, data = subset(alltog, species == "Avena" & !is.na(R)))
 summary(l)
+l2 <- tidy(l, effects = "fixed")
+xtable(l2)
 
 ## Now just do yes versus no for fall rain
 l <- lm(R~prop*density + prop*fallrain, data = subset(alltog, species == "Avena", !is.na(R)))
@@ -164,6 +179,7 @@ summary(l)
 
 l <- lme(R ~ prop*fallrain + prop*density, random = ~1|shelterBlock, data = subset(alltog, species == "Avena" & !is.na(R)))
 summary(l)
+
 
 
 
