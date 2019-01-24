@@ -1,7 +1,7 @@
 library(tidyverse)
 library(here)
-source("modelprojections.R")
-source("rainfallsimulations.R")
+source("modelsimulations.R")
+source("rainfallsimulation.R")
 
 ### CREATE A FUNCTION THAT SETS VARIABLE PARAMETERS ACROSS TIMESTEPS ####
 variable.par <- function(model.dat, trtselect, t.num){
@@ -48,10 +48,37 @@ variable.out2 <- variable.out %>%
   mutate(vartreatment=ordered(vartreatment, levels = c(fallDry="fallDry", consistentDry="consistentDry", springDry="springDry", controlRain="controlRain"))) %>%
   mutate(vartreatmentprev=ordered(vartreatmentprev, levels = c(fallDry="fallDry", consistentDry="consistentDry", springDry="springDry", controlRain="controlRain")))
 
-# Plot it
-ggplot(variable.out2, aes(x=time, y=(count), color = species)) + geom_line(size = 2) + 
-  theme_bw() +  theme(text = element_text(size = 24), legend.position = "none",
-                      panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +  scale_y_log10() + #scale_y_log10(limits=c(.1, 1200), breaks = c(1, 10, 100, 1000)) +
-  labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Time step")  + scale_color_manual(values = c("grey80", "grey30")) # +
-ggsave(here("Figs", "fig3.pdf"), width = 8, height = 6)
+rainsummary$time <- seq(1:121)
+variable.out3 <- left_join(variable.out2, rainsummary)
 
+# # Plot it
+# ggplot(variable.out3, aes(x=time, y=(count), color = species)) + geom_line(size = 2) + 
+#   theme_bw() +  theme(text = element_text(size = 24), legend.position = "none",
+#                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +  scale_y_log10() + #scale_y_log10(limits=c(.1, 1200), breaks = c(1, 10, 100, 1000)) +
+#   labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Time step")  + scale_color_manual(values = c("grey80", "grey30")) # +
+# #ggsave(here("Figs", "fig3.pdf"), width = 8, height = 6)
+
+# Plot it
+a <-  ggplot(subset(variable.out3), aes(x=year, y=(count), color = species)) + geom_line(size = 2) +
+  theme_bw() +  theme(text = element_text(size = 24), legend.position = "none",
+                      panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +  
+   scale_y_log10() + #scale_y_log10(limits=c(.1, 1200), breaks = c(1, 10, 100, 1000)) +
+  labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Year")  +
+  scale_color_manual(values = c("grey80", "grey30")) + 
+  annotate("text", x= 1895, y = 1100, label= "(a)", size = 7) # +
+
+b <- ggplot(subset(variable.out3), aes(x=year, y=Total)) +
+  geom_line(size = 2) +
+  theme_bw() +  theme(text = element_text(size = 24), 
+                      panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
+  labs(y="Rainfall (mm)", x = "Year")   + 
+  annotate("text", x= 1895, y = 1200, label= "(b)", size = 7)
+
+pdf(here::here("Figs", "fig3_v2.pdf"), width = 8, height = 8)
+plot_grid(a + theme(axis.text.x = element_blank(), 
+                    axis.title.x = element_blank(), axis.ticks.x = element_blank()),
+          b, rel_heights = c(3/5, 2/5), nrow = 2, align = "v")
+dev.off()
+
+
+#ggsave(here("Figs", "fig3.pdf"), width = 8, height = 6)

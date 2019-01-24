@@ -4,7 +4,7 @@ library(nlstools)
 library(grid)
 library(gridExtra)
 
-
+source("seeds_datasummary.R")
 
 ## FORMAT DATA FOR POPULATION MODELS ##
 
@@ -56,9 +56,9 @@ m1out_big <- nlsLM(m1, start=list(lambda=158, aiE = .01, aiA=.01),
                 control=nls.lm.control(maxiter=500), trace=T,
                 data = subset(dat, !is.na(ERseedout) & treatment == "fallDry"))
 summary(m1out_big)
-logLik(m1out_big)
-
-lrtest( m1out_big, m1out)
+# logLik(m1out_big)
+# 
+# lrtest( m1out_big, m1out)
 
 # ## attempts at nls_multstart 
 # library(nls.multstart)
