@@ -14,10 +14,10 @@ togdat2 <- togdat %>%
   mutate(density = recode(density, D1 = "Low density", D2 = "High density"))
 
 ## BW version
-p <- ggplot(subset(togdat2, species == "Avena" & R != 66), aes(x=(prop/10), y=(R)))+ geom_point(size = 3, color = "grey80")+ facet_grid(density~treatment,  scale="free") +
-  geom_smooth(method="lm", color ="grey80", lwd = 1.5, se = F) + theme_bw() + ylab("Per capita population growth rate") + 
-  geom_point(dat = subset(togdat2, species == "Erodium"), size = 3, color = "grey30") +
-  geom_smooth(dat = subset(togdat2, species == "Erodium"), method="lm", color = "grey30", lwd = 1.5, se = F) +
+p <- ggplot(subset(togdat2, species == "Avena" & R != 66), aes(x=(prop/10), y=(R)))+ geom_point(size = 2, color = "grey80")+ facet_grid(density~treatment,  scale="free") +
+  geom_smooth(method="lm", color ="grey80", lwd = 1, se = F) + theme_bw() + ylab("Per capita population growth rate") + 
+  geom_point(dat = subset(togdat2, species == "Erodium"), size = 2, color = "grey30") +
+  geom_smooth(dat = subset(togdat2, species == "Erodium"), method="lm", color = "grey30", lwd = 1, se = F) +
   xlab("Seeding ratio")  + geom_hline(yintercept=1) + scale_x_continuous(limits = c(0, 1), breaks = c(.1, .5, .9, 1), labels = c(".1", ".5", ".9", "1")) + 
   theme(strip.background = element_blank(), text = element_text(size = 16), 
         strip.text.x = element_text(size = 16), strip.text.y = element_text(size = 16),

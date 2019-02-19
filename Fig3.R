@@ -1,5 +1,6 @@
 library(tidyverse)
 library(here)
+library(cowplot)
 source("modelsimulations.R")
 source("rainfallsimulation.R")
 
@@ -59,7 +60,7 @@ variable.out3 <- left_join(variable.out2, rainsummary)
 # #ggsave(here("Figs", "fig3.pdf"), width = 8, height = 6)
 
 # Plot it
-a <-  ggplot(subset(variable.out3), aes(x=year, y=(count), color = species)) + geom_line(size = 2) +
+a <-  ggplot(subset(variable.out3), aes(x=year, y=(count), color = species)) + geom_line(size = 1.2) +
   theme_bw() +  theme(text = element_text(size = 24), legend.position = "none",
                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +  
    scale_y_log10() + #scale_y_log10(limits=c(.1, 1200), breaks = c(1, 10, 100, 1000)) +
@@ -68,7 +69,7 @@ a <-  ggplot(subset(variable.out3), aes(x=year, y=(count), color = species)) + g
   annotate("text", x= 1895, y = 1100, label= "(a)", size = 7) # +
 
 b <- ggplot(subset(variable.out3), aes(x=year, y=Total)) +
-  geom_line(size = 2) +
+  geom_line(size = 1.2) +
   theme_bw() +  theme(text = element_text(size = 24), 
                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
   labs(y="Rainfall (mm)", x = "Year")   + 
