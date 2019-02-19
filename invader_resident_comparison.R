@@ -1,4 +1,5 @@
-# Create figure 2b -- low density growth rates for observed environment
+# Calculate the partitioning of coexistence mechanisms using weighted averages
+# and compare invader to resident
 
 # load the data
 #load("model.dat.output.RData")
@@ -43,6 +44,19 @@ pop.equilibrium <- function (N0, s, g, a_intra, lambda) {
   return(N)
 }
 
+pop.invade <- function (N0, resident, s, g, a_inter, lambda) {
+  # to run for only a single timestep
+  N <- s*(1-g)*N0 + N0*(lambda*g)/(1+a_inter*resident)
+  return(N)
+}
+
+pop.resident <- function (N0, resident, s, g, a_intra, a_inter, lambda) {
+  # to run for only a single timestep
+  N <- s*(1-g)*resident + resident*(lambda*g)/(1+a_intra*resident+a_inter*N0)
+  return(N)
+}
+
+
 avena <- subset(model.dat, species=="Avena")
 erodium <- subset(model.dat, species=="Erodium")
 
@@ -81,21 +95,6 @@ for (t in 1:time) {
 
 # check output
 plot(seq(1:(time+1)), N_erodium, type="l")
-
-# say that resident community has reached equilibrium after a 50 year "burn in" period
-# and invade each species into the community one at a time
-
-pop.invade <- function (N0, resident, s, g, a_inter, lambda) {
-  # to run for only a single timestep
-  N <- s*(1-g)*N0 + N0*(lambda*g)/(1+a_inter*resident)
-  return(N)
-}
-
-pop.resident <- function (N0, resident, s, g, a_intra, a_inter, lambda) {
-  # to run for only a single timestep
-  N <- s*(1-g)*resident + resident*(lambda*g)/(1+a_intra*resident+a_inter*N0)
-  return(N)
-}
 
 # invade avena first
 avena_invade <- rep (NA, 72)
@@ -138,6 +137,9 @@ for (t in 50:time) {
 avena_invader <- log(avena_invade)
 erodium_invader <- log(erodium_invade)
 
+avena_r <- log(avena_resident)
+erodium_r <- log(erodium_resident)
+
 # ------------------------------------------------------------------------------------
 # growth rate partitioning of each species as the invader
 # The environment affects both the growth rates AND the competition experienced (e.g. Rachel & Margie's paper),
@@ -152,18 +154,32 @@ erodium_invader <- log(erodium_invade)
 # find resident equilibrium with no variation
 # use the timeseries of environmental conditions for environmental variability
 # for avena
-N0 <- 550
-avena_no_var <- rep(NA, time)
-avena_no_var[1] <- N0
 
 a_intra_weighted <- consistent.dry*avena$aiA[1]+fall.dry*avena$aiA[2]+
   spring.dry*avena$aiA[3]+control.rain*avena$aiA[4]
-lambda_weighted <- consistent.dry*avena$lambda[1]+fall.dry*avena$lambda[2]+
+a_inter_weighted <- consistent.dry*avena$aiE[1]+fall.dry*avena$aiE[2]+
+  spring.dry*avena$aiE[3]+control.rain*avena$aiE[4]
+a_lambda_weighted <- consistent.dry*avena$lambda[1]+fall.dry*avena$lambda[2]+
   spring.dry*avena$lambda[3]+control.rain*avena$lambda[4]
 
+e_intra_weighted <- consistent.dry*erodium$aiE[1]+fall.dry*erodium$aiE[2]+
+  spring.dry*erodium$aiE[3]+control.rain*erodium$aiE[4]
+e_inter_weighted <- consistent.dry*erodium$aiA[1]+fall.dry*erodium$aiA[2]+
+  spring.dry*erodium$aiA[3]+control.rain*erodium$aiA[4]
+e_lambda_weighted <- consistent.dry*erodium$lambda[1]+fall.dry*erodium$lambda[2]+
+  spring.dry*erodium$lambda[3]+control.rain*erodium$lambda[4]
+
+
+# ----------------------------------------------------------------------------------------
+# First invade each species into the other at equilibrium with no variation
+# find resident equilibriums
+
+N0 <- 550
+avena_no_var <- rep(NA, time)
+avena_no_var[1] <- N0
 for (t in 1:time) {
   avena_no_var[t+1] <- pop.equilibrium(N0=avena_no_var[t], s=as, g=ag, 
-                                       a_intra=a_intra_weighted, lambda=lambda_weighted)
+                                       a_intra=a_intra_weighted, lambda=a_lambda_weighted)
 }
 
 # check output
@@ -175,37 +191,39 @@ N0 <- 70
 erodium_no_var <- rep(NA, time)
 erodium_no_var[1] <- N0
 
-a_intra_weighted <- consistent.dry*erodium$aiE[1]+fall.dry*erodium$aiE[2]+
-  spring.dry*erodium$aiE[3]+control.rain*erodium$aiE[4]
-lambda_weighted <- consistent.dry*erodium$lambda[1]+fall.dry*erodium$lambda[2]+
-  spring.dry*erodium$lambda[3]+control.rain*erodium$lambda[4]
-
 for (t in 1:time) {
-  erodium_no_var[t+1] <- pop.equilibrium(N0=erodium_no_var[t], s=es, g=eg, a_intra=a_intra_weighted, 
-                                         lambda=lambda_weighted)
+  erodium_no_var[t+1] <- pop.equilibrium(N0=erodium_no_var[t], s=es, g=eg, a_intra=e_intra_weighted, 
+                                         lambda=e_lambda_weighted)
 }
 
 # check output
 plot(seq(1:(time+1)), erodium_no_var, type="l")
 
-# Then invade each species into the other at equilibrium with no variation
-a_inter_weighted <- consistent.dry*avena$aiE[1]+fall.dry*avena$aiE[2]+
-  spring.dry*avena$aiE[3]+control.rain*avena$aiE[4]
-lambda_weighted <- consistent.dry*avena$lambda[1]+fall.dry*avena$lambda[2]+
-  spring.dry*avena$lambda[3]+control.rain*avena$lambda[4]
-
+# now invade
 avena_invade_no_var <- pop.invade(N0=1, resident=erodium_no_var[time], s=as, g=ag, 
-                                  a_inter=a_inter_weighted, lambda=lambda_weighted)
+                                  a_inter=a_inter_weighted, lambda=a_lambda_weighted)
 
-a_inter_weighted <- consistent.dry*erodium$aiA[1]+fall.dry*erodium$aiA[2]+
-  spring.dry*erodium$aiA[3]+control.rain*erodium$aiA[4]
-lambda_weighted <- consistent.dry*erodium$lambda[1]+fall.dry*erodium$lambda[2]+
-  spring.dry*erodium$lambda[3]+control.rain*erodium$lambda[4]
 erodium_invade_no_var <- pop.invade(N0=1, resident=avena_no_var[time], s=es, g=eg, 
-                                    a_inter=a_inter_weighted, lambda=lambda_weighted)
+                                    a_inter=e_inter_weighted, lambda=e_lambda_weighted)
 
-avena_epilson_0 <- log(avena_invade_no_var)
-erodium_epilson_0 <- log(erodium_invade_no_var)
+# now for the residents
+avena_resident_no_var_next <- pop.resident(N0=1, resident=avena_no_var[time], s=as, g=ag, 
+                                      a_intra = a_intra_weighted,
+                                      a_inter=a_inter_weighted, lambda=a_lambda_weighted)
+
+avena_resident_no_var <- avena_no_var[time]/avena_resident_no_var_next
+
+# erodium
+erodium_resident_no_var_next <- pop.resident(N0=1, resident=erodium_no_var[time], s=es, g=eg, 
+                                           a_intra = e_intra_weighted,
+                                           a_inter=e_inter_weighted, lambda=e_lambda_weighted)
+
+erodium_resident_no_var <- erodium_no_var[time]/erodium_resident_no_var_next
+
+avena_epsilon_0 <- log(avena_invade_no_var)
+erodium_epsilon_0 <- log(erodium_invade_no_var)
+resident_avena_epsilon_0 <- log(avena_resident_no_var)
+resident_erodium_epsilon_0 <- log(erodium_resident_no_var)
 
 # ----------------------------------------------------------------------------------------
 # second calculate the invasion rate with variable intrinsic growth rates, 
@@ -217,8 +235,6 @@ N0 <- 550
 R_avena_var_lambda <- rep(NA, time)
 R_avena_var_lambda[1] <- N0
 
-a_intra_weighted <- consistent.dry*avena$aiA[1]+fall.dry*avena$aiA[2]+
-  spring.dry*avena$aiA[3]+control.rain*avena$aiA[4]
 for (t in 1:time) {
   params <- subset(avena, treatment==rainsummary$raintype[t])
   R_avena_var_lambda[t+1] <- pop.equilibrium(N0=R_avena_var_lambda[t], s=as, g=ag, 
@@ -233,12 +249,10 @@ N0 <- 70
 R_erodium_var_lambda <- rep(NA, time)
 R_erodium_var_lambda[1] <- N0
 
-a_intra_weighted <- consistent.dry*erodium$aiE[1]+fall.dry*erodium$aiE[2]+
-  spring.dry*erodium$aiE[3]+control.rain*erodium$aiE[4]
 for (t in 1:time) {
   params <- subset(erodium, treatment==rainsummary$raintype[t])
   R_erodium_var_lambda[t+1] <- pop.equilibrium(N0=R_erodium_var_lambda[t], s=es, g=eg, 
-                                               a_intra=mean(erodium$aiE), lambda=params$lambda)
+                                               a_intra=e_intra_weighted, lambda=params$lambda)
 }
 
 # check output
@@ -247,52 +261,70 @@ plot(seq(1:(time+1)), R_erodium_var_lambda, type="l")
 # Then invade each species into the other at equilibrium with variation in lambda only
 # invade avena first
 I_avena_var_lambda <- rep (NA, 72)
+erodium_resident_var_lambda <- rep (NA, 72)
 temp <- 1
-a_inter_weighted <- consistent.dry*avena$aiE[1]+fall.dry*avena$aiE[2]+
-  spring.dry*avena$aiE[3]+control.rain*avena$aiE[4]
 
 for (t in 50:time) {
-  params <- subset(avena, treatment==rainsummary$raintype[t])
+  params_avena <- subset(avena, treatment==rainsummary$raintype[t])
+  params_erodium <- subset(erodium, treatment==rainsummary$raintype[t])
+  
+  #invader
   I_avena_var_lambda[temp] <- pop.invade(N0=1, resident=R_erodium_var_lambda[t], s=as, g=ag, 
-                                         a_inter=a_inter_weighted, lambda=params$lambda)
+                                         a_inter=a_inter_weighted, lambda=params_avena$lambda)
+  
+  #resident
+  erodium_res_var_lambda <- pop.resident(N0=1, resident=R_erodium_var_lambda[t], s=es, g=eg, 
+                                         a_intra = e_intra_weighted, a_inter=e_inter_weighted, 
+                                         lambda=params_erodium$lambda)
+  
+  erodium_resident_var_lambda[temp] <- erodium_res_var_lambda /  R_erodium_var_lambda[t]
+  
   temp  <- temp + 1 
 }
 
 # then have erodium invade into avena
 I_erodium_var_lambda <- rep (NA, 72)
+avena_resident_var_lambda <- rep (NA, 72)
 temp <- 1
-a_inter_weighted <- consistent.dry*erodium$aiA[1]+fall.dry*erodium$aiA[2]+
-  spring.dry*erodium$aiA[3]+control.rain*erodium$aiA[4]
 
 for (t in 50:time) {
-  params <- subset(erodium, treatment==rainsummary$raintype[t])
+  params_avena <- subset(avena, treatment==rainsummary$raintype[t])
+  params_erodium <- subset(erodium, treatment==rainsummary$raintype[t])
+  
+  # invader
   I_erodium_var_lambda[temp] <- pop.invade(N0=1, resident=R_avena_var_lambda[t], s=es, g=eg, 
-                                           a_inter=a_inter_weighted, lambda=params$lambda)
+                                           a_inter=e_inter_weighted, lambda=params_erodium$lambda)
+  
+  #resident
+  avena_res_var_lambda <- pop.resident(N0=1, resident=R_avena_var_lambda[t], s=as, g=ag, 
+                                         a_intra = a_intra_weighted, a_inter=a_inter_weighted, 
+                                         lambda=params_avena$lambda)
+  
+  avena_resident_var_lambda[temp] <- avena_res_var_lambda /  R_avena_var_lambda[t]
+  
   temp  <- temp + 1 
 }
 
-avena_epsilon_lambda <- log(mean(I_avena_var_lambda)) - avena_epilson_0
-erodium_epsilon_lambda <- log(mean(I_erodium_var_lambda)) - erodium_epilson_0
+avena_epsilon_lambda <- log(mean(I_avena_var_lambda)) - avena_epsilon_0
+erodium_epsilon_lambda <- log(mean(I_erodium_var_lambda)) - erodium_epsilon_0
+
+resident_avena_epsilon_lambda <- log(mean(avena_resident_var_lambda)) - resident_avena_epsilon_0
+resident_erodium_epsilon_lambda <- log(mean(erodium_resident_var_lambda)) - resident_erodium_epsilon_0
 
 # ----------------------------------------------------------------------------------------
 # third calculate the invasion rate with variable alphas, 
 # but with NO variation in intrinsic growth rates
 
-# find resident equilibrium with variable growth rates
+# find resident equilibrium with variable alphas
 # for avena
 N0 <- 550
 R_avena_var_alpha <- rep(NA, time)
 R_avena_var_alpha[1] <- N0
 
-lambda_weighted_avena <- consistent.dry*avena$lambda[1]+fall.dry*avena$lambda[2]+
-  spring.dry*avena$lambda[3]+control.rain*avena$lambda[4]
-lambda_weighted_erodium <- consistent.dry*erodium$lambda[1]+fall.dry*erodium$lambda[2]+
-  spring.dry*erodium$lambda[3]+control.rain*erodium$lambda[4]
-
 for (t in 1:time) {
   params <- subset(avena, treatment==rainsummary$raintype[t])
   R_avena_var_alpha[t+1] <- pop.equilibrium(N0=R_avena_var_alpha[t], s=as, g=ag, 
-                                            a_intra=params$aiA, lambda=lambda_weighted_avena)
+                                            a_intra=params$aiA, lambda=a_lambda_weighted)
 }
 
 # check output
@@ -306,53 +338,112 @@ R_erodium_var_alpha[1] <- N0
 for (t in 1:time) {
   params <- subset(erodium, treatment==rainsummary$raintype[t])
   R_erodium_var_alpha[t+1] <- pop.equilibrium(N0=R_erodium_var_alpha[t], s=es, g=eg, 
-                                              a_intra=params$aiE, lambda=lambda_weighted_erodium)
+                                              a_intra=params$aiE, lambda=e_lambda_weighted)
 }
 
 # check output
 plot(seq(1:(time+1)), R_erodium_var_alpha, type="l")
 
-# Then invade each species into the other at equilibrium with variation in lambda only
+# Then invade each species into the other at equilibrium with variation in alpha only
 # invade avena first
 I_avena_var_alpha <- rep (NA, 72)
+erodium_resident_var_alpha <- rep (NA, 72)
 temp <- 1
+
 for (t in 50:time) {
-  params <- subset(avena, treatment==rainsummary$raintype[t])
+  params_avena <- subset(avena, treatment==rainsummary$raintype[t])
+  params_erodium <- subset(erodium, treatment==rainsummary$raintype[t])
+  
+  #invader
   I_avena_var_alpha[temp] <- pop.invade(N0=1, resident=R_erodium_var_alpha[t], s=as, g=ag, 
-                                        a_inter=params$aiE, lambda=lambda_weighted_avena)
+                                         a_inter=params_avena$aiE, lambda=a_lambda_weighted)
+  
+  #resident
+  erodium_res_var_alpha <- pop.resident(N0=1, resident=R_erodium_var_alpha[t], s=es, g=eg, 
+                                         a_intra = params_erodium$aiE, a_inter=params_erodium$aiA, 
+                                         lambda=e_lambda_weighted)
+  
+  erodium_resident_var_alpha[temp] <- erodium_res_var_alpha /  R_erodium_var_alpha[t]
+  
   temp  <- temp + 1 
 }
 
 # then have erodium invade into avena
 I_erodium_var_alpha <- rep (NA, 72)
+avena_resident_var_alpha <- rep (NA, 72)
 temp <- 1
+
 for (t in 50:time) {
-  params <- subset(erodium, treatment==rainsummary$raintype[t])
+  params_avena <- subset(avena, treatment==rainsummary$raintype[t])
+  params_erodium <- subset(erodium, treatment==rainsummary$raintype[t])
+  
+  # invader
   I_erodium_var_alpha[temp] <- pop.invade(N0=1, resident=R_avena_var_alpha[t], s=es, g=eg, 
-                                          a_inter=params$aiA, lambda=lambda_weighted_erodium)
+                                           a_inter=params_erodium$aiA, lambda=e_lambda_weighted)
+  
+  #resident
+  avena_res_var_alpha <- pop.resident(N0=1, resident=R_avena_var_alpha[t], s=as, g=ag, 
+                                       a_intra = params_avena$aiA, a_inter=params_avena$aiE, 
+                                       lambda=a_lambda_weighted)
+  
+  avena_resident_var_alpha[temp] <- avena_res_var_alpha /  R_avena_var_alpha[t]
+  
   temp  <- temp + 1 
 }
 
-avena_epsilon_alpha <- log(mean(I_avena_var_alpha)) - avena_epilson_0
-erodium_epsilon_alpha <- log(mean(I_erodium_var_alpha)) - erodium_epilson_0
+
+avena_epsilon_alpha <- log(mean(I_avena_var_alpha)) - avena_epsilon_0
+erodium_epsilon_alpha <- log(mean(I_erodium_var_alpha)) - erodium_epsilon_0
+
+resident_avena_epsilon_alpha <- log(mean(avena_resident_var_alpha)) - resident_avena_epsilon_0
+resident_erodium_epsilon_alpha <- log(mean(erodium_resident_var_alpha)) - resident_erodium_epsilon_0
 
 # ----------------------------------------------------------------------------------------
 # finally calculate the invasion rate with the interaction terms 
 
+#invaders
 avena_epsilon_interaction <- mean(avena_invader) - 
-  (avena_epilson_0 + avena_epsilon_alpha + avena_epsilon_lambda)
+  (avena_epsilon_0 + avena_epsilon_alpha + avena_epsilon_lambda)
 erodium_epsilon_interaction <- mean(erodium_invader) - 
-  (erodium_epilson_0 + erodium_epsilon_alpha + erodium_epsilon_lambda)
+  (erodium_epsilon_0 + erodium_epsilon_alpha + erodium_epsilon_lambda)
 
+# residents
+resident_avena_epsilon_interaction <- mean(avena_r) - 
+  (resident_avena_epsilon_0 + resident_avena_epsilon_alpha + resident_avena_epsilon_lambda)
+resident_erodium_epsilon_interaction <- mean(erodium_r) - 
+  (resident_erodium_epsilon_0 + resident_erodium_epsilon_alpha + resident_erodium_epsilon_lambda)
+
+# ----------------------------------------------------------------------------------------
 # double check it all works
-avena_LDGR <- mean(avena_invader)
-erodium_LDGR <- mean(erodium_invader)
+avena_LDGR <- mean(avena_invader) - mean(erodium_r)
+erodium_LDGR <- mean(erodium_invader) - mean(avena_r)
 
-avena_results_weighted <- c(avena_LDGR, avena_epilson_0, avena_epsilon_alpha, 
+# invader only -- without invader-resident comparison
+avena_results_weighted <- c(mean(avena_invader), avena_epsilon_0, avena_epsilon_alpha, 
                    avena_epsilon_lambda, avena_epsilon_interaction)
-erodium_results_weighted <- c(erodium_LDGR, erodium_epilson_0, erodium_epsilon_alpha, 
+erodium_results_weighted <- c(mean(erodium_invader), erodium_epsilon_0, erodium_epsilon_alpha, 
                      erodium_epsilon_lambda, erodium_epsilon_interaction)
-# check that all epsilons add to give the LDGR
-avena_epilson_0 + avena_epsilon_alpha + avena_epsilon_lambda + avena_epsilon_interaction
 
-erodium_epilson_0 + erodium_epsilon_alpha + erodium_epsilon_lambda + erodium_epsilon_interaction
+# with invader resident comparison
+ir_avena_results_weighted <- c(avena_LDGR, (avena_epsilon_0-resident_erodium_epsilon_0), 
+                               (avena_epsilon_alpha-resident_erodium_epsilon_alpha), 
+                               (avena_epsilon_lambda-resident_erodium_epsilon_lambda), 
+                               (avena_epsilon_interaction-resident_erodium_epsilon_interaction))
+
+ir_erodium_results_weighted <- c(erodium_LDGR, (erodium_epsilon_0-resident_avena_epsilon_0), 
+                                 (erodium_epsilon_alpha-resident_avena_epsilon_alpha), 
+                                 (erodium_epsilon_lambda-resident_avena_epsilon_lambda), 
+                                  (erodium_epsilon_interaction-resident_avena_epsilon_interaction))
+
+# check that all epsilons add to give the LDGR
+# first for invader only
+#avena_epsilon_0 + avena_epsilon_alpha + avena_epsilon_lambda + avena_epsilon_interaction
+
+#erodium_epsilon_0 + erodium_epsilon_alpha + erodium_epsilon_lambda + erodium_epsilon_interaction
+
+# then for invader-resident comparisons
+#(avena_epsilon_0-resident_erodium_epsilon_0) + (avena_epsilon_alpha-resident_erodium_epsilon_alpha) + 
+#  (avena_epsilon_lambda-resident_erodium_epsilon_lambda) + (avena_epsilon_interaction- resident_erodium_epsilon_interaction)
+
+#(erodium_epsilon_0-resident_avena_epsilon_0) + (erodium_epsilon_alpha-resident_avena_epsilon_alpha) + 
+#  (erodium_epsilon_lambda-resident_avena_epsilon_lambda) + (erodium_epsilon_interaction-resident_avena_epsilon_interaction)
