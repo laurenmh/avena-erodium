@@ -1,11 +1,12 @@
 # Calculate the partitioning of coexistence mechanisms using weighted averages
-# and compare invader to resident
+# and compare invader to resident growth rates
+# Calculations are based on Ellner et al. 2018 Ecology Letters
 
 # load the data
 #load("model.dat.output.RData")
 source("models.R")
-# First determine how common each environmental type is
 
+# First determine how common each environmental type is
 # what about for what we actually see in terms of the number of years in each env. condition
 # first read in the data
 rain <- read_csv("Data/PRISM_brownsvalley_long.csv", skip = 10) %>%
@@ -37,6 +38,9 @@ spring.dry <- length(which(rainsummary$raintype == "springDry")) / nrow(rainsumm
 consistent.dry <- length(which(rainsummary$raintype == "consistentDry")) / nrow(rainsummary)
 control.rain <- length(which(rainsummary$raintype == "controlRain")) / nrow(rainsummary)
 
+# ------------------------------------------------------------------------------------
+# Functions for use in coexistence calcualtions
+
 # Determine equilibrium conditions for each species in isolation 
 pop.equilibrium <- function (N0, s, g, a_intra, lambda) {
   # to run for only a single timestep
@@ -44,18 +48,24 @@ pop.equilibrium <- function (N0, s, g, a_intra, lambda) {
   return(N)
 }
 
+# invader population growth rate one time step forward
 pop.invade <- function (N0, resident, s, g, a_inter, lambda) {
   # to run for only a single timestep
   N <- s*(1-g)*N0 + N0*(lambda*g)/(1+a_inter*resident)
   return(N)
 }
 
+# resident population growth rate one time step forward
 pop.resident <- function (N0, resident, s, g, a_intra, a_inter, lambda) {
   # to run for only a single timestep
   N <- s*(1-g)*resident + resident*(lambda*g)/(1+a_intra*resident+a_inter*N0)
   return(N)
 }
 
+# ------------------------------------------------------------------------------------
+# run models
+# first determine resident equilibrium abundances and low density growth rates
+# without partitioning coexistence
 
 avena <- subset(model.dat, species=="Avena")
 erodium <- subset(model.dat, species=="Erodium")
@@ -132,8 +142,6 @@ for (t in 50:time) {
   temp  <- temp + 1 
 }
 
-# ------------------------------------------------------------------------------------
-# These are the values for Lauren Hallett to use for figure 2b
 avena_invader <- log(avena_invade)
 erodium_invader <- log(erodium_invade)
 
@@ -151,9 +159,9 @@ erodium_r <- log(erodium_resident)
 # first calculate the invasion rate under average conditions (weighted), with NO variation in 
 # intrinsic growth rates or alphas
 
-# find resident equilibrium with no variation
 # use the timeseries of environmental conditions for environmental variability
-# for avena
+# determine weighted average intraspecific alpha, interspecific alpha, and lambda values
+# for each species
 
 a_intra_weighted <- consistent.dry*avena$aiA[1]+fall.dry*avena$aiA[2]+
   spring.dry*avena$aiA[3]+control.rain*avena$aiA[4]
@@ -199,14 +207,14 @@ for (t in 1:time) {
 # check output
 plot(seq(1:(time+1)), erodium_no_var, type="l")
 
-# now invade
+# now invade each species into the resident
 avena_invade_no_var <- pop.invade(N0=1, resident=erodium_no_var[time], s=as, g=ag, 
                                   a_inter=a_inter_weighted, lambda=a_lambda_weighted)
 
 erodium_invade_no_var <- pop.invade(N0=1, resident=avena_no_var[time], s=es, g=eg, 
                                     a_inter=e_inter_weighted, lambda=e_lambda_weighted)
 
-# now for the residents
+# determine any changes in the residents' abundances
 avena_resident_no_var_next <- pop.resident(N0=1, resident=avena_no_var[time], s=as, g=ag, 
                                       a_intra = a_intra_weighted,
                                       a_inter=a_inter_weighted, lambda=a_lambda_weighted)
@@ -226,7 +234,7 @@ resident_avena_epsilon_0 <- log(avena_resident_no_var)
 resident_erodium_epsilon_0 <- log(erodium_resident_no_var)
 
 # ----------------------------------------------------------------------------------------
-# second calculate the invasion rate with variable intrinsic growth rates, 
+# second calculate the invasion rate with variable intrinsic growth rates (lambda), 
 # but with NO variation in alphas
 
 # find resident equilibrium with variable growth rates

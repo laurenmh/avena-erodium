@@ -1,5 +1,8 @@
+# create figure 4--partitioning of coexistence mechanisms
+
 library(tidyverse)
 
+# source the file that paritions coexistence
 source("invader_resident_comparison.R")
 
 params <- c("a", "b", "c", "d", "e")
@@ -42,6 +45,3 @@ grid.text(c("(a)", "(b)"), x = c(0.495,.95),
           gp=gpar(fontsize=16))
 dev.off()
 
-
-
-# adjust equation to be deltas for the invader resident 
