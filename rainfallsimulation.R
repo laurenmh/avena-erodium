@@ -21,6 +21,10 @@ rainsummary <-  rain %>%
   spread(season, ppt) %>%
   mutate(Total = Early + Late) 
 
+## check rainfall patterns for site description
+last50 <- rainsummary %>%
+  filter(year%in%c(1967:2016))
+  
 rainsummary <- rainsummary %>%
   mutate(raintype = "controlRain",
          raintype = ifelse(Early < quantile(rainsummary$Early, .5), "fallDry", raintype),
