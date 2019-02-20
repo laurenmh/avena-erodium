@@ -61,7 +61,7 @@ variable.out3 <- left_join(variable.out2, rainsummary)
 
 # Plot it
 a <-  ggplot(subset(variable.out3), aes(x=year, y=(count), color = species)) + geom_line(size = 1.2) +
-  theme_bw() +  theme(text = element_text(size = 24), legend.position = "none",
+  theme_bw() +  theme(text = element_text(size = 20), legend.position = "none",
                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +  
    scale_y_log10() + #scale_y_log10(limits=c(.1, 1200), breaks = c(1, 10, 100, 1000)) +
   labs(y=expression(paste("Count (individuals/m"^"2",")")), x = "Year")  +
@@ -70,7 +70,7 @@ a <-  ggplot(subset(variable.out3), aes(x=year, y=(count), color = species)) + g
 
 b <- ggplot(subset(variable.out3), aes(x=year, y=Total)) +
   geom_line(size = 1.2) +
-  theme_bw() +  theme(text = element_text(size = 24), 
+  theme_bw() +  theme(text = element_text(size = 20), 
                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + 
   labs(y="Rainfall (mm)", x = "Year")   + 
   annotate("text", x= 1895, y = 1200, label= "(b)", size = 7)
