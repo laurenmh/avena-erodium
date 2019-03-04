@@ -1,5 +1,5 @@
-source("modelprojections.R")
-source("coexistence_partitioning.R")
+source("modelsimulations.R")
+source("invader_resident_comparison.R")
 
 library(tidyverse)
 library(gridExtra)
