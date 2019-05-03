@@ -52,7 +52,7 @@ ERoutput <- as.data.frame(matrix(nrow = 0, ncol = 7))
 names(ERoutput) = c("estimate", "se", "t", "p", "params", "treatment", "species")
 for (i in 1:length(treatments)){
   m1out <- nlsLM(m1E, start=list(lambda=1, aiE = .01, aiA=.01),
-                 lower = c(0, 0, 0), upper = c(200, 1, 1),
+                 lower = c(0, -1, -1), upper = c(200, 1, 1),
                  control=nls.lm.control(maxiter=500), trace=T,
                  data = subset(dat, !is.na(ERseedout) & treatment == treatments[i]))
   
@@ -83,7 +83,7 @@ for (i in 1:length(treatments)){
   
   m1out <- nlsLM(m1A, start=list(lambda=1, aiE = .01, aiA=.01), 
                  control=nls.lm.control(maxiter=500), 
-                 lower = c(0, 0, 0), upper = c(200, 1, 1),
+                 lower = c(0, -1, -1), upper = c(200, 1, 1),
                  trace=T,
                  data = subset(dat, !is.na(AVseedout) & treatment == treatments[i] & rm == 0))
   outreport <- as.data.frame(summary(m1out)$coef[1:3, 1:4])
