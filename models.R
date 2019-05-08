@@ -30,7 +30,7 @@ treatments <- unique(dat$treatment)
 ## Set germination and survival fractions from the literature
 as <- .4
 ag <- .9
-es <- .82
+es <- .82 #no error bars, although apparently no significant differences between this value (for seeds buried 12 mo) and 93.5% (for seeds buried only 3 mo). No difference between microsites either.
 eg <- .6
 
 ##### ERODIUM MODEL ####
@@ -51,6 +51,7 @@ treatments <- unique(togdat$treatment)
 ERoutput <- as.data.frame(matrix(nrow = 0, ncol = 7))
 names(ERoutput) = c("estimate", "se", "t", "p", "params", "treatment", "species")
 for (i in 1:length(treatments)){
+  eg <- ifelse(treatments[i] == "consistentDry" | treatments[i] == "fallDry", 0.64, .6)
   m1out <- nlsLM(m1E, start=list(lambda=1, aiE = .01, aiA=.01),
                  lower = c(0, -1, -1), upper = c(200, 1, 1),
                  control=nls.lm.control(maxiter=500), trace=T,
@@ -80,6 +81,7 @@ treatments <- unique(togdat$treatment)
 AVoutput <- as.data.frame(matrix(nrow = 0, ncol = 7))
 names(AVoutput) = c("estimate", "se", "t", "p", "params", "treatment", "species")
 for (i in 1:length(treatments)){
+  eg <- ifelse(treatments[i] == "consistentDry" | treatments[i] == "fallDry", 0.64, .6)
   
   m1out <- nlsLM(m1A, start=list(lambda=1, aiE = .01, aiA=.01), 
                  control=nls.lm.control(maxiter=500), 
