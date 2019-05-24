@@ -99,7 +99,7 @@ es_max <- 1.25*es
 eg_min <- .75*eg
 eg_max <- 1.25*eg
 
-runs <- 100
+runs <- 10000
 results_avena <- matrix(NA, nrow=runs, ncol=5)
 results_erodium <- matrix(NA, nrow=runs, ncol=5)
 
@@ -129,7 +129,7 @@ treatments <- unique(togdat$treatment)
 ERoutput <- as.data.frame(matrix(nrow = 0, ncol = 7))
 names(ERoutput) = c("estimate", "se", "t", "p", "params", "treatment", "species")
 for (i in 1:length(treatments)){
-  eg <- ifelse(treatments[i] == "consistentDry" | treatments[i] == "fallDry", 0.64, .6)
+  eg <- ifelse(treatments[i] == "consistentDry" | treatments[i] == "fallDry", runif(1, .75*.64, 1.25*.64), runif(1, .75*.60, 1.25*.60))
   m1out <- nlsLM(m1E, start=list(lambda=1, aiE = .01, aiA=.01),
                  lower = c(0, 0, 0), upper = c(200, 1, 1),
                  control=nls.lm.control(maxiter=500), trace=T,
@@ -197,11 +197,6 @@ parameter_table <- rbind(ERoutput, AVoutput) %>%
 avena <- subset(model.dat, species=="Avena")
 erodium <- subset(model.dat, species=="Erodium")
 
-## Set germination and survival fractions from the literature
-as <- .4
-ag <- .9
-es <- .82
-eg <- .6
 
 # use the timeseries of environmental conditions for environmental variability
 # for avena
@@ -577,5 +572,5 @@ results_erodium[run,] <- ir_erodium_results_weighted
 
 }
 
-write.csv(results_avena, file = "avena_germ_surv_var.csv")
-write.csv(results_erodium, file = "erodium_germ_surv_var.csv")
+write.csv(results_avena, file = "avena_germ_surv_var_treatment.csv")
+write.csv(results_erodium, file = "erodium_germ_surv_var_treatment.csv")

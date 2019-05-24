@@ -90,13 +90,15 @@ ag <- .9
 es <- .82 #no error bars, although apparently no significant differences between this value (for seeds buried 12 mo) and 93.5% (for seeds buried only 3 mo). No difference between microsites either.
 eg <- .6
 
-runs <- 10000
+runs <- 4
+block <- c("A", "B", "C", "D")
 results_avena <- matrix(NA, nrow=runs, ncol=5)
 results_erodium <- matrix(NA, nrow=runs, ncol=5)
 
 
-for (run in 1:runs) {
-dat <- dat_all[sample(nrow(dat_all), 160, replace=TRUE), ]
+for (run in 1:4) {
+  block_now <- block[run]
+dat <- subset(dat_all, shelterBlock != block_now)
 
 ##### ERODIUM MODEL ####
 ## With seed bank 
@@ -564,5 +566,5 @@ results_erodium[run,] <- ir_erodium_results_weighted
 
 }
 
-write.csv(results_avena, file = "avena_bootstrap_results.csv")
-write.csv(results_erodium, file = "erodium_bootstrap_results.csv")
+write.csv(results_avena, file = "avena_leave_one_out.csv")
+write.csv(results_erodium, file = "erodium_leave_one_out.csv")

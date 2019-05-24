@@ -1,13 +1,13 @@
-# create figure 4--partitioning of coexistence mechanisms
+# create supplementary figure similar to figure 4--partitioning of coexistence mechanisms
 
 library(tidyverse)
 
 # source the file that paritions coexistence
 source("invader_resident_comparison.R")
 
-# load the bootstrap results from 10,000 bootstrap runs
-avena_bootstrap <- read.csv("avena_bootstrap_results.csv")
-erodium_bootstrap <- read.csv("erodium_bootstrap_results.csv")
+# load the 10,000 runs with variable germination and survival
+avena_bootstrap <- read.csv("avena_germ_surv_var.csv")
+erodium_bootstrap <- read.csv("erodium_germ_surv_var.csv")
 
 
 # extract 95% CI
