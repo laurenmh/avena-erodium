@@ -90,13 +90,13 @@ ag <- .9
 es <- .82 #no error bars, although apparently no significant differences between this value (for seeds buried 12 mo) and 93.5% (for seeds buried only 3 mo). No difference between microsites either.
 eg <- .6
 
-runs <- 4
-block <- c("A", "B", "C", "D")
+runs <- 5
+block <- c("A", "B", "C", "D", "E")
 results_avena <- matrix(NA, nrow=runs, ncol=5)
 results_erodium <- matrix(NA, nrow=runs, ncol=5)
 
 
-for (run in 1:4) {
+for (run in 1:5) {
   block_now <- block[run]
 dat <- subset(dat_all, shelterBlock != block_now)
 

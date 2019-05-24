@@ -6,8 +6,8 @@ library(tidyverse)
 source("invader_resident_comparison.R")
 
 # load the 10,000 runs with variable germination and survival
-avena_bootstrap <- read.csv("avena_germ_surv_var.csv")
-erodium_bootstrap <- read.csv("erodium_germ_surv_var.csv")
+avena_bootstrap <- read.csv("avena_germ_surv_var_treatment.csv")
+erodium_bootstrap <- read.csv("erodium_germ_surv_var_treatment.csv")
 
 
 # extract 95% CI
