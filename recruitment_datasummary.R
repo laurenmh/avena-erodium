@@ -59,7 +59,7 @@ avdat <-mydat2 %>%
   mutate(seed=20*(prop/10), seed=ifelse(density=="D2", 200*(prop/10), seed), seed=ifelse(density=="D3", 2000*(prop/10), seed))%>%
   mutate(AV2=ifelse(AV2>seed, seed, AV2))%>%
   mutate(propgerm=AV2/seed) %>%
-  mutate(species = "Avena")
+  mutate(species = "Avena") 
 
 # 
 # av <- avdat %>%
@@ -70,10 +70,11 @@ avdat <-mydat2 %>%
 # summary(l)
 
 # Put it all together
-recruittog <- rbind(erodat[c("plot", "subplot", "prop", "propgerm", "density", "treatment", "species")], 
-                    avdat[c("plot", "subplot", "prop", "propgerm", "density", "treatment", "species")])  %>%
+recruittog <- rbind(erodat[c("plot", "subplot", "prop", "propgerm", "density", "treatment", "species", "AV2", "ERO2")], 
+                    avdat[c("plot", "subplot", "prop", "propgerm", "density", "treatment", "species", "AV2", "ERO2")])  %>%
   filter(density != "D3") %>%
   mutate(treatment=ordered(treatment, levels = c( consistentDry="consistentDry", fallDry="fallDry",springDry="springDry", controlRain="controlRain"))) %>%
   mutate(treatment = recode(treatment, consistentDry = "Consistent dry", fallDry = "Fall dry",  springDry = "Spring dry", controlRain = "Consistent wet")) %>%
   mutate(density = ordered(density, levels = c(D1 = "D1", D2 = "D2"))) %>%
   mutate(density = recode(density, D1 = "Low density", D2 = "High density"))
+
