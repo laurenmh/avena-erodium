@@ -41,7 +41,7 @@ axis(side=1, at=c(.7, 1.9, 3.1, 4.3, 5.5), lab=c("a" = expression(bar("r")[i]-ba
 
 box(which = "plot", lty = "solid", col = "grey")
 mtext(expression(italic("Avena")), side=3, outer=FALSE, adj=0.5)
-text(x=5.9, y=2.8, "(a)")
+text(x=.3, y=2.7, "(a)")
 arrows(x0=c(.7, 1.9, 3.1, 4.3, 5.5), y0=avena_lower, 
        x1=c(.7, 1.9, 3.1, 4.3, 5.5), y1=avena_upper, length=.05,
        angle=90, col=c("black"), code=3)
@@ -59,7 +59,7 @@ axis(side=1, at=c(.7, 1.9, 3.1, 4.3, 5.5), lab=c("a" = expression(bar("r")[i]-ba
 
 box(which = "plot", lty = "solid", col = "grey")
 mtext(expression(italic("Erodium")), side=3, outer=FALSE, adj=0.5)
-text(x=5.9, y=2.8, "(b)")
+text(x=.3, y=2.7, "(b)")
 arrows(x0=c(.7, 1.9, 3.1, 4.3, 5.5), y0=erodium_lower, 
        x1=c(.7, 1.9, 3.1, 4.3, 5.5), y1=erodium_upper, length=.05,
        angle=90, col=c("black"), code=3)
