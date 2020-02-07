@@ -60,7 +60,7 @@ variable.out3 <- left_join(variable.out2, rainsummary)
 # #ggsave(here("Figs", "fig3.pdf"), width = 8, height = 6)
 
 
-ggplot(subset(variable.out3), aes(x=year, y=(count), color = species)) + geom_line(size = 1.2) +
+ggplot(subset(variable.out3), aes(x=year, y=(count), color = species)) + geom_line(size = 1.6) +
   theme_bw() +  theme(text = element_text(size = 20), legend.position = "none",
                       panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +  
   scale_y_log10() + #scale_y_log10(limits=c(.1, 1200), breaks = c(1, 10, 100, 1000)) +
